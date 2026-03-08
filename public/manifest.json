@@ -1,0 +1,21 @@
+{
+  "name": "GymPro Management",
+  "short_name": "GymPro",
+  "description": "Professional Gym Management System",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#10b981",
+  "icons": [
+    {
+      "src": "https://picsum.photos/seed/gym/192/192",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "https://picsum.photos/seed/gym/512/512",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

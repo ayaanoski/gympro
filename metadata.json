@@ -1,0 +1,5 @@
+{
+  "name": "GymPro Management",
+  "description": "A comprehensive Gym Management PWA with role-based access, member tracking, and WhatsApp integration.",
+  "requestFramePermissions": ["camera"]
+}
