@@ -89,55 +89,73 @@ export const Settings: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-12 pb-10 font-sans">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">User Management</h1>
-          <p className="text-gray-500">Manage staff and trainer accounts</p>
+          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">User Management</h1>
+          <p className="text-gray-500 mt-2 text-lg font-medium">Coordinate your staff and trainer ecosystem</p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
-          className="flex items-center gap-2 bg-emerald-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100"
+          className="flex items-center gap-3 bg-brand-primary text-white px-8 py-4 rounded-[1.5rem] font-black text-sm hover:bg-brand-secondary transition-all shadow-xl shadow-brand-primary/20"
         >
-          <UserPlus className="w-5 h-5" />
-          Add Employee
+          <UserPlus className="w-5 h-5 transition-transform group-hover:scale-110" />
+          Onboard Employee
         </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-10">
+      <div className="space-y-12">
         {/* Pending Approvals */}
         {users.filter(u => !u.active && u.role !== 'admin').length > 0 && (
-          <section className="space-y-4">
-            <h2 className="text-lg font-bold text-amber-600 flex items-center gap-2">
-              <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
-              Pending Approvals
-            </h2>
-            <div className="bg-amber-50/30 rounded-3xl border border-amber-100 shadow-sm overflow-hidden">
+          <section className="space-y-6">
+            <div className="flex items-center gap-3 ml-2">
+              <div className="w-3 h-3 bg-amber-400 rounded-full animate-pulse shadow-sm shadow-amber-200" />
+              <h2 className="text-xl font-black text-gray-900 tracking-tight">Pending Approvals</h2>
+            </div>
+            <div className="bg-pastel-orange/20 rounded-[2.5rem] border border-orange-100/50 shadow-premium overflow-hidden">
               <table className="w-full text-left">
-                <tbody className="divide-y divide-amber-100/50">
+                <thead>
+                  <tr className="text-orange-400/70 text-[10px] uppercase font-black tracking-[0.2em] border-b border-orange-100/30">
+                    <th className="px-8 py-6 font-black">Candidate</th>
+                    <th className="px-8 py-6 font-black text-center">Designated Role</th>
+                    <th className="px-8 py-6 font-black">Contact Core</th>
+                    <th className="px-8 py-6 font-black text-right">Approval Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-orange-100/30">
                   {users.filter(u => !u.active && u.role !== 'admin').map((user) => (
-                    <tr key={user.id} className="hover:bg-amber-50/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-xl flex items-center justify-center font-bold text-white bg-amber-500`}>
+                    <tr key={user.id} className="group hover:bg-white/50 transition-colors">
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-white bg-amber-400 shadow-sm transition-transform group-hover:scale-110">
                             {user.name[0]}
                           </div>
                           <div>
-                            <p className="text-sm font-bold text-gray-900">{user.name}</p>
-                            <p className="text-xs text-gray-500">{user.email}</p>
+                            <p className="text-base font-black text-gray-900">{user.name}</p>
+                            <p className="text-xs text-gray-400 font-bold">{user.email}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-xs font-bold uppercase text-gray-500">{user.role}</td>
-                      <td className="px-6 py-4 text-xs text-gray-500">{user.phone}</td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                      <td className="px-8 py-6 text-center">
+                        <span className="px-4 py-2 bg-white rounded-xl text-[10px] font-black uppercase tracking-widest text-orange-500 border border-orange-100 shadow-sm">
+                          {user.role}
+                        </span>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-2 text-sm font-black text-gray-500">
+                          <Phone className="w-4 h-4 text-orange-300" />
+                          {user.phone}
+                        </div>
+                      </td>
+                      <td className="px-8 py-6 text-right">
+                        <div className="flex items-center justify-end gap-3">
                           <button
                             onClick={() => handleStatusUpdate(user.id, true)}
                             disabled={isProcessingStatus === user.id}
-                            className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-xl text-xs font-bold hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-100 disabled:opacity-50"
+                            className="flex items-center gap-3 bg-emerald-500 text-white px-6 py-3 rounded-2xl text-xs font-black hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50"
                           >
-                            <UserCheck className="w-4 h-4" /> {isProcessingStatus === user.id ? 'Approving...' : 'Approve'}
+                            <UserCheck className="w-4 h-4" />
+                            {isProcessingStatus === user.id ? 'VERIFYING...' : 'AUTHORIZE'}
                           </button>
                           <button
                             onClick={async () => {
@@ -145,7 +163,7 @@ export const Settings: React.FC = () => {
                                 await db.collection('users').doc(user.id).delete();
                               }
                             }}
-                            className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                            className="p-3 text-red-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all"
                             title="Reject & Delete"
                           >
                             <TrashBinTrash className="w-5 h-5" />
@@ -161,70 +179,83 @@ export const Settings: React.FC = () => {
         )}
 
         {/* User Management */}
-        <section className="space-y-4">
-          <h2 className="text-lg font-bold text-gray-900">All Employees</h2>
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+        <section className="space-y-6">
+          <div className="flex items-center justify-between ml-2">
+            <h2 className="text-xl font-black text-gray-900 tracking-tight">Workforce Directory</h2>
+            <span className="px-4 py-1.5 bg-gray-100 rounded-full text-[10px] font-black text-gray-400 uppercase tracking-widest">
+              {users.length} TOTAL MEMBERS
+            </span>
+          </div>
+          <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-premium overflow-hidden">
             <div className="overflow-x-auto">
               <table className="w-full text-left">
                 <thead>
-                  <tr className="text-gray-400 text-xs uppercase tracking-wider border-b border-gray-50">
-                    <th className="px-6 py-4 font-medium">Employee</th>
-                    <th className="px-6 py-4 font-medium">Role</th>
-                    <th className="px-6 py-4 font-medium">Status</th>
-                    <th className="px-6 py-4 font-medium text-right">Actions</th>
+                  <tr className="text-gray-400 text-[10px] uppercase font-black tracking-[0.2em] border-b border-gray-50/50">
+                    <th className="px-8 py-6 font-black">Employee Identity</th>
+                    <th className="px-8 py-6 font-black text-center">Operational Role</th>
+                    <th className="px-8 py-6 font-black">Current Status</th>
+                    <th className="px-8 py-6 font-black text-right">Access Controls</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-50">
+                <tbody className="divide-y divide-gray-50/50">
                   {users.filter(u => u.active || u.role === 'admin').map((user) => (
-                    <tr key={user.id} className="hover:bg-gray-50/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-white ${user.role === 'admin' ? 'bg-purple-500' : user.role === 'staff' ? 'bg-blue-500' : 'bg-emerald-500'
+                    <tr key={user.id} className="group hover:bg-gray-50/30 transition-colors">
+                      <td className="px-8 py-6">
+                        <div className="flex items-center gap-4">
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-white shadow-sm transition-transform group-hover:scale-110 ${user.role === 'admin' ? 'bg-pastel-purple text-purple-600 border border-purple-100' :
+                              user.role === 'staff' ? 'bg-pastel-blue text-blue-600 border border-blue-100' :
+                                'bg-pastel-emerald text-emerald-600 border border-emerald-100'
                             }`}>
                             {user.name[0]}
                           </div>
                           <div>
-                            <p className="text-sm font-bold text-gray-900">{user.name}</p>
-                            <p className="text-xs text-gray-500">{user.email}</p>
+                            <p className="text-base font-black text-gray-900">{user.name}</p>
+                            <p className="text-xs text-gray-400 font-bold">{user.email}</p>
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase ${user.role === 'admin' ? 'bg-purple-50 text-purple-600' :
-                          user.role === 'staff' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'
+                      <td className="px-8 py-6 text-center">
+                        <span className={`inline-flex px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'bg-pastel-purple text-purple-600' :
+                            user.role === 'staff' ? 'bg-pastel-blue text-blue-600' :
+                              'bg-pastel-emerald text-emerald-600'
                           }`}>
                           {user.role}
                         </span>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${user.active ? 'bg-emerald-50 text-emerald-600' : 'bg-red-50 text-red-600'
+                      <td className="px-8 py-6">
+                        <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${user.active
+                            ? 'bg-pastel-emerald text-emerald-500 border border-emerald-100'
+                            : 'bg-pastel-pink text-pink-500 border border-pink-100'
                           }`}>
-                          {user.active ? 'Active' : 'Disabled'}
+                          <span className={`w-1.5 h-1.5 rounded-full mr-2 ${user.active ? 'bg-emerald-500' : 'bg-pink-500'}`}></span>
+                          {user.active ? 'In Service' : 'Off Duty'}
                         </span>
                       </td>
-                      <td className="px-6 py-4 text-right">
-                        <div className="flex items-center justify-end gap-2">
+                      <td className="px-8 py-6 text-right">
+                        <div className="flex items-center justify-end gap-3">
                           <button
                             onClick={() => handleStatusUpdate(user.id, !user.active)}
                             disabled={isProcessingStatus === user.id}
-                            className={`p-2 rounded-xl transition-colors ${user.active ? 'text-red-600 hover:bg-red-50' : 'text-emerald-600 hover:bg-emerald-50'
-                              } disabled:opacity-50`}
-                            title={user.active ? 'Disable Account' : 'Enable Account'}
+                            className={`p-3 rounded-2xl transition-all shadow-sm ${user.active
+                                ? 'text-red-400 bg-red-50 hover:bg-red-100'
+                                : 'text-emerald-500 bg-emerald-50 hover:bg-emerald-100'
+                              } disabled:opacity-50 font-black text-xs uppercase tracking-tighter`}
+                            title={user.active ? 'Suspend Credentials' : 'Restore Access'}
                           >
                             {isProcessingStatus === user.id ? (
-                              <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                              <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mx-auto" />
                             ) : (
-                              user.active ? <UserCross className="w-5 h-5" /> : <UserCheck className="w-5 h-5" />
+                              user.active ? <LockPassword className="w-5 h-5" /> : <Shield className="w-5 h-5" />
                             )}
                           </button>
                           {user.role !== 'admin' && (
                             <button
                               onClick={async () => {
-                                if (window.confirm('Delete this user account?')) {
+                                if (window.confirm('Permanently delete this user profile?')) {
                                   await db.collection('users').doc(user.id).delete();
                                 }
                               }}
-                              className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                              className="p-3 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all"
                             >
                               <TrashBinTrash className="w-5 h-5" />
                             </button>
@@ -249,75 +280,94 @@ export const Settings: React.FC = () => {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               onClick={() => setIsModalOpen(false)}
-              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              className="absolute inset-0 bg-black/30 backdrop-blur-md"
             />
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 40 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
-              className="relative w-full max-w-lg bg-white rounded-3xl shadow-2xl p-8"
+              exit={{ opacity: 0, scale: 0.95, y: 40 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-lg bg-white rounded-[3rem] shadow-2xl p-10 border border-white/50"
             >
-              <h2 className="text-2xl font-bold mb-6">Add New Employee</h2>
-              <form onSubmit={handleCreateUser} className="space-y-4">
+              <div className="mb-10 text-center">
+                <div className="w-20 h-20 bg-pastel-emerald rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-sm">
+                  <UserPlus className="w-10 h-10 text-emerald-500" />
+                </div>
+                <h2 className="text-3xl font-black text-gray-900 tracking-tight tracking-tight">Onboard Talent</h2>
+                <p className="text-gray-400 font-bold mt-1 uppercase text-[10px] tracking-widest">New System Credentialing</p>
+              </div>
+
+              <form onSubmit={handleCreateUser} className="space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Full Identity Name</label>
                   <input
                     type="text"
                     required
                     value={formData.name}
                     onChange={e => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
-                    placeholder="John Doe"
+                    className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700 placeholder:text-gray-300"
+                    placeholder="Candidate Full Name"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Professional Email</label>
                   <input
                     type="email"
                     required
                     value={formData.email}
                     onChange={e => setFormData({ ...formData, email: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
-                    placeholder="john@gym.com"
+                    className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700 placeholder:text-gray-300"
+                    placeholder="email@gympro.com"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Secure Password</label>
+                  <input
+                    type="password"
+                    required
+                    value={formData.password}
+                    onChange={e => setFormData({ ...formData, password: e.target.value })}
+                    className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700 placeholder:text-gray-300"
+                    placeholder="••••••••"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Contact Channel</label>
                   <input
                     type="tel"
                     required
                     value={formData.phone}
                     onChange={e => setFormData({ ...formData, phone: e.target.value })}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
-                    placeholder="9876543210"
+                    className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700 placeholder:text-gray-300"
+                    placeholder="+91 XXXXX XXXXX"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Role</label>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Specialized Role</label>
                   <select
                     value={formData.role}
                     onChange={e => setFormData({ ...formData, role: e.target.value as any })}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-100 rounded-xl focus:ring-2 focus:ring-emerald-500 outline-none"
+                    className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-[right_1.25rem_center] bg-no-repeat"
                   >
-                    <option value="staff">Staff (Reception)</option>
-                    <option value="trainer">Trainer</option>
-                    <option value="admin">Admin (Manager)</option>
+                    <option value="staff">Operational Staff (Reception)</option>
+                    <option value="trainer">Performance Trainer</option>
+                    <option value="admin">System Administration</option>
                   </select>
                 </div>
-                <div className="flex gap-3 pt-4">
+                <div className="flex gap-4 pt-6">
                   <button
                     type="button"
                     onClick={() => setIsModalOpen(false)}
-                    className="flex-1 py-3 bg-gray-100 text-gray-600 rounded-xl font-bold hover:bg-gray-200 transition-colors"
+                    className="flex-1 py-4 bg-gray-100 text-gray-600 rounded-[1.5rem] font-black text-sm hover:bg-gray-200 transition-all font-black"
                   >
-                    Cancel
+                    Abort
                   </button>
                   <button
                     type="submit"
                     disabled={isCreating}
-                    className="flex-1 py-3 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-100 disabled:opacity-50"
+                    className="flex-2 py-4 bg-brand-primary text-white rounded-[1.5rem] font-black text-sm hover:bg-brand-secondary transition-all shadow-xl shadow-brand-primary/20 disabled:opacity-50"
                   >
-                    {isCreating ? 'Creating...' : 'Create Account'}
+                    {isCreating ? 'INITIALIZING...' : 'ACTIVATE ACCOUNT'}
                   </button>
                 </div>
               </form>
@@ -327,4 +377,5 @@ export const Settings: React.FC = () => {
       </AnimatePresence>
     </div>
   );
+
 };

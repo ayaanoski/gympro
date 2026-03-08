@@ -1,4 +1,5 @@
 import { db } from '../firebase';
+import { format } from 'date-fns';
 
 export const trainerService = {
   getAssignedMembers: (trainerId: string, callback: (members: any[]) => void) => {
@@ -23,7 +24,7 @@ export const trainerService = {
       .where('member_id', '==', memberId)
       .limit(1)
       .get();
-      
+
     if (snap.empty) {
       await db.collection('workout_plans').add({ member_id: memberId, ...planData });
     } else {
@@ -44,7 +45,7 @@ export const trainerService = {
       user_id: trainerId,
       name: trainerName,
       role: 'trainer',
-      date: new Date().toISOString().split('T')[0],
+      date: format(new Date(), 'yyyy-MM-dd'),
       login_time: new Date().toLocaleTimeString(),
       timestamp: new Date().toISOString()
     });

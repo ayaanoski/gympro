@@ -8,14 +8,12 @@ export const sharedService = {
   getMemberPayments: (memberId: string) => {
     return db.collection('payments')
       .where('member_id', '==', memberId)
-      .orderBy('date', 'desc')
       .get();
   },
 
   getMemberProgress: (memberId: string) => {
     return db.collection('progress')
       .where('member_id', '==', memberId)
-      .orderBy('date', 'desc')
       .get();
   },
 

@@ -4,6 +4,7 @@ import firebase from 'firebase/compat/app';
 import { auth, db } from '../firebase';
 import { motion, AnimatePresence } from 'motion/react';
 import { Dumbbell, LockPassword, Letter, Danger, UserRounded, Phone } from '@solar-icons/react';
+import { format } from 'date-fns';
 
 export const Login: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -59,7 +60,7 @@ export const Login: React.FC = () => {
                 user_id: user.uid,
                 name: userData?.name,
                 role: userData?.role,
-                date: new Date().toISOString().split('T')[0],
+                date: format(new Date(), 'yyyy-MM-dd'),
                 login_time: new Date().toLocaleTimeString(),
                 timestamp: firebase.firestore.FieldValue.serverTimestamp()
               });
@@ -150,8 +151,8 @@ export const Login: React.FC = () => {
                     type="button"
                     onClick={() => setFormData({ ...formData, role: 'staff' })}
                     className={`p-4 rounded-2xl border-2 transition-all font-bold text-sm ${formData.role === 'staff'
-                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                        : 'border-gray-100 bg-gray-50 text-gray-500'
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                      : 'border-gray-100 bg-gray-50 text-gray-500'
                       }`}
                   >
                     Staff
@@ -160,8 +161,8 @@ export const Login: React.FC = () => {
                     type="button"
                     onClick={() => setFormData({ ...formData, role: 'trainer' })}
                     className={`p-4 rounded-2xl border-2 transition-all font-bold text-sm ${formData.role === 'trainer'
-                        ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
-                        : 'border-gray-100 bg-gray-50 text-gray-500'
+                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                      : 'border-gray-100 bg-gray-50 text-gray-500'
                       }`}
                   >
                     Trainer

@@ -1,15 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../../firebase';
-import { 
-  Magnifer, 
-  UserPlus, 
-  ClockCircle, 
-  Gift, 
+import {
+  Magnifer,
+  UserPlus,
+  ClockCircle,
+  Gift,
   Dollar,
   AltArrowRight,
   ChatRoundDots
 } from '@solar-icons/react';
-import { openWhatsApp } from '../../utils/whatsapp';
+import { openWhatsApp, whatsAppTemplates } from '../../utils/whatsapp';
 import { format } from 'date-fns';
 
 export const StaffDashboard: React.FC = () => {
@@ -56,13 +56,11 @@ export const StaffDashboard: React.FC = () => {
   }, []);
 
   const sendBirthdayWish = (member: any) => {
-    const message = `Happy Birthday ${member.name}! 🎂 Wishing you a fantastic day and a great year ahead. See you at the gym! - Gym Management`;
-    openWhatsApp(member.phone, message);
+    openWhatsApp(member.phone, whatsAppTemplates.birthday(member.name));
   };
 
   const sendExpiryReminder = (member: any) => {
-    const message = `Hi ${member.name}, your gym membership is expiring on ${member.expiry_date}. Renew soon to continue your fitness journey! - Gym Management`;
-    openWhatsApp(member.phone, message);
+    openWhatsApp(member.phone, whatsAppTemplates.expiry(member.name, member.expiry_date));
   };
 
   return (
@@ -105,7 +103,7 @@ export const StaffDashboard: React.FC = () => {
                 {stats.expiringSoon.length} Members
               </span>
             </div>
-            
+
             <div className="space-y-4">
               {stats.expiringSoon.length > 0 ? stats.expiringSoon.map((member, i) => (
                 <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
@@ -118,7 +116,7 @@ export const StaffDashboard: React.FC = () => {
                       <p className="text-xs text-gray-500">Expires: {member.expiry_date}</p>
                     </div>
                   </div>
-                  <button 
+                  <button
                     onClick={() => sendExpiryReminder(member)}
                     className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors"
                   >
@@ -165,7 +163,7 @@ export const StaffDashboard: React.FC = () => {
               {stats.birthdays.length > 0 ? stats.birthdays.map((member, i) => (
                 <div key={i} className="flex items-center justify-between bg-white/10 p-3 rounded-2xl backdrop-blur-sm">
                   <p className="text-sm font-medium">{member.name}</p>
-                  <button 
+                  <button
                     onClick={() => sendBirthdayWish(member)}
                     className="p-2 bg-white text-emerald-600 rounded-xl hover:bg-emerald-50 transition-colors"
                   >
