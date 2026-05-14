@@ -152,7 +152,7 @@ export const Settings: React.FC = () => {
                           <button
                             onClick={() => handleStatusUpdate(user.id, true)}
                             disabled={isProcessingStatus === user.id}
-                            className="flex items-center gap-3 bg-emerald-500 text-white px-6 py-3 rounded-2xl text-xs font-black hover:bg-emerald-600 transition-all shadow-lg shadow-emerald-500/20 disabled:opacity-50"
+                            className="flex items-center gap-3 bg-red-500 text-white px-6 py-3 rounded-2xl text-xs font-black hover:bg-red-600 transition-all shadow-lg shadow-red-500/20 disabled:opacity-50"
                           >
                             <UserCheck className="w-4 h-4" />
                             {isProcessingStatus === user.id ? 'VERIFYING...' : 'AUTHORIZE'}
@@ -202,9 +202,9 @@ export const Settings: React.FC = () => {
                     <tr key={user.id} className="group hover:bg-gray-50/30 transition-colors">
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-4">
-                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-white shadow-sm transition-transform group-hover:scale-110 ${user.role === 'admin' ? 'bg-pastel-purple text-purple-600 border border-purple-100' :
-                              user.role === 'staff' ? 'bg-pastel-blue text-blue-600 border border-blue-100' :
-                                'bg-pastel-emerald text-emerald-600 border border-emerald-100'
+                          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-white shadow-sm transition-transform group-hover:scale-110 ${user.role === 'admin' ? 'bg-pastel-purple text-red-600 border border-red-100' :
+                              user.role === 'staff' ? 'bg-pastel-blue text-red-600 border border-red-100' :
+                                'bg-pastel-emerald text-red-600 border border-red-100'
                             }`}>
                             {user.name[0]}
                           </div>
@@ -215,19 +215,19 @@ export const Settings: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-8 py-6 text-center">
-                        <span className={`inline-flex px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'bg-pastel-purple text-purple-600' :
-                            user.role === 'staff' ? 'bg-pastel-blue text-blue-600' :
-                              'bg-pastel-emerald text-emerald-600'
+                        <span className={`inline-flex px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${user.role === 'admin' ? 'bg-pastel-purple text-red-600' :
+                            user.role === 'staff' ? 'bg-pastel-blue text-red-600' :
+                              'bg-pastel-emerald text-red-600'
                           }`}>
                           {user.role}
                         </span>
                       </td>
                       <td className="px-8 py-6">
                         <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${user.active
-                            ? 'bg-pastel-emerald text-emerald-500 border border-emerald-100'
+                            ? 'bg-pastel-emerald text-red-500 border border-red-100'
                             : 'bg-pastel-pink text-pink-500 border border-pink-100'
                           }`}>
-                          <span className={`w-1.5 h-1.5 rounded-full mr-2 ${user.active ? 'bg-emerald-500' : 'bg-pink-500'}`}></span>
+                          <span className={`w-1.5 h-1.5 rounded-full mr-2 ${user.active ? 'bg-red-500' : 'bg-pink-500'}`}></span>
                           {user.active ? 'In Service' : 'Off Duty'}
                         </span>
                       </td>
@@ -238,7 +238,7 @@ export const Settings: React.FC = () => {
                             disabled={isProcessingStatus === user.id}
                             className={`p-3 rounded-2xl transition-all shadow-sm ${user.active
                                 ? 'text-red-400 bg-red-50 hover:bg-red-100'
-                                : 'text-emerald-500 bg-emerald-50 hover:bg-emerald-100'
+                                : 'text-red-500 bg-red-50 hover:bg-red-100'
                               } disabled:opacity-50 font-black text-xs uppercase tracking-tighter`}
                             title={user.active ? 'Suspend Credentials' : 'Restore Access'}
                           >
@@ -291,7 +291,7 @@ export const Settings: React.FC = () => {
             >
               <div className="mb-10 text-center">
                 <div className="w-20 h-20 bg-pastel-emerald rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-sm">
-                  <UserPlus className="w-10 h-10 text-emerald-500" />
+                  <UserPlus className="w-10 h-10 text-red-500" />
                 </div>
                 <h2 className="text-3xl font-black text-gray-900 tracking-tight tracking-tight">Onboard Talent</h2>
                 <p className="text-gray-400 font-bold mt-1 uppercase text-[10px] tracking-widest">New System Credentialing</p>

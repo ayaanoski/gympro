@@ -176,10 +176,10 @@ export const MembersList: React.FC = () => {
                   </td>
                   <td className="px-8 py-6">
                     <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${member.status === 'active'
-                      ? 'bg-pastel-emerald text-emerald-500 border border-emerald-100'
+                      ? 'bg-pastel-emerald text-red-500 border border-red-100'
                       : 'bg-pastel-pink text-pink-500 border border-pink-100'
                       }`}>
-                      <span className={`w-1.5 h-1.5 rounded-full mr-2 ${member.status === 'active' ? 'bg-emerald-500' : 'bg-pink-500'}`}></span>
+                      <span className={`w-1.5 h-1.5 rounded-full mr-2 ${member.status === 'active' ? 'bg-red-500' : 'bg-pink-500'}`}></span>
                       {member.status}
                     </span>
                   </td>
@@ -187,7 +187,7 @@ export const MembersList: React.FC = () => {
                     <div className="flex items-center justify-end gap-3">
                       <button
                         onClick={() => openWhatsApp(member.phone, whatsAppTemplates.checkIn(member.name))}
-                        className="p-3 text-emerald-500 hover:bg-pastel-emerald/50 rounded-xl transition-all shadow-sm bg-white"
+                        className="p-3 text-red-500 hover:bg-pastel-emerald/50 rounded-xl transition-all shadow-sm bg-white"
                         title="Direct Contact"
                       >
                         <ChatRoundDots className="w-5 h-5" />

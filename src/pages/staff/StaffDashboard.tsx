@@ -71,7 +71,7 @@ export const StaffDashboard: React.FC = () => {
           <p className="text-gray-500">Daily gym operations</p>
         </div>
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 bg-emerald-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-emerald-700 transition-colors">
+          <button className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-red-700 transition-colors">
             <UserPlus className="w-5 h-5" />
             Add Member
           </button>
@@ -86,7 +86,7 @@ export const StaffDashboard: React.FC = () => {
           placeholder="Search members by name, phone or ID..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-12 pr-4 py-4 bg-white border border-gray-100 rounded-2xl shadow-sm focus:ring-2 focus:ring-emerald-500 outline-none transition-all"
+          className="w-full pl-12 pr-4 py-4 bg-white border border-gray-100 rounded-2xl shadow-sm focus:ring-2 focus:ring-red-500 outline-none transition-all"
         />
       </div>
 
@@ -118,7 +118,7 @@ export const StaffDashboard: React.FC = () => {
                   </div>
                   <button
                     onClick={() => sendExpiryReminder(member)}
-                    className="p-2 text-emerald-600 hover:bg-emerald-50 rounded-xl transition-colors"
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
                   >
                     <ChatRoundDots className="w-5 h-5" />
                   </button>
@@ -132,7 +132,7 @@ export const StaffDashboard: React.FC = () => {
           <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-2">
-                <Dollar className="w-5 h-5 text-emerald-600" />
+                <Dollar className="w-5 h-5 text-red-600" />
                 <h3 className="text-lg font-bold">Recent Payments</h3>
               </div>
             </div>
@@ -154,7 +154,7 @@ export const StaffDashboard: React.FC = () => {
 
         {/* Birthdays */}
         <div className="space-y-6">
-          <div className="bg-emerald-600 p-6 rounded-3xl text-white shadow-lg shadow-emerald-200">
+          <div className="bg-red-600 p-6 rounded-3xl text-white shadow-lg shadow-red-200">
             <div className="flex items-center gap-2 mb-6">
               <Gift className="w-6 h-6" />
               <h3 className="text-lg font-bold">Today's Birthdays</h3>
@@ -165,13 +165,13 @@ export const StaffDashboard: React.FC = () => {
                   <p className="text-sm font-medium">{member.name}</p>
                   <button
                     onClick={() => sendBirthdayWish(member)}
-                    className="p-2 bg-white text-emerald-600 rounded-xl hover:bg-emerald-50 transition-colors"
+                    className="p-2 bg-white text-red-600 rounded-xl hover:bg-red-50 transition-colors"
                   >
                     <ChatRoundDots className="w-4 h-4" />
                   </button>
                 </div>
               )) : (
-                <p className="text-emerald-100 text-sm py-4">No birthdays today</p>
+                <p className="text-red-100 text-sm py-4">No birthdays today</p>
               )}
             </div>
           </div>

@@ -97,7 +97,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
                   className={`
                     group flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200
                     ${isActive
-                      ? 'bg-indigo-50/80 text-brand-primary font-bold'
+                      ? 'bg-red-50/80 text-brand-primary font-bold'
                       : 'text-gray-400 hover:bg-gray-50 hover:text-gray-900'}
                   `}
                 >

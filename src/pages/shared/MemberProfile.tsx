@@ -254,7 +254,7 @@ export const MemberProfile: React.FC = () => {
                     </div>
                   )}
                 </div>
-                <div className={`absolute bottom-2 right-2 w-8 h-8 rounded-full border-4 border-white shadow-lg ${member.status === 'active' ? 'bg-emerald-500' : 'bg-pink-500'}`} />
+                <div className={`absolute bottom-2 right-2 w-8 h-8 rounded-full border-4 border-white shadow-lg ${member.status === 'active' ? 'bg-red-500' : 'bg-pink-500'}`} />
               </div>
 
               <h2 className="text-3xl font-black text-gray-900 tracking-tight">{member.name}</h2>
@@ -265,14 +265,14 @@ export const MemberProfile: React.FC = () => {
               <div className="flex justify-center gap-4 mt-10">
                 <button
                   onClick={() => openWhatsApp(member.phone, whatsAppTemplates.checkIn(member.name))}
-                  className="p-4 bg-pastel-emerald text-emerald-600 rounded-[1.5rem] hover:scale-110 transition-all shadow-sm border border-emerald-100"
+                  className="p-4 bg-pastel-emerald text-red-600 rounded-[1.5rem] hover:scale-110 transition-all shadow-sm border border-red-100"
                   title="Secure Data Bridge"
                 >
                   <ChatRoundDots className="w-6 h-6" />
                 </button>
                 <button
                   onClick={() => setIsLogModalOpen(true)}
-                  className="p-4 bg-pastel-blue text-blue-600 rounded-[1.5rem] hover:scale-110 transition-all shadow-sm border border-blue-100"
+                  className="p-4 bg-pastel-blue text-red-600 rounded-[1.5rem] hover:scale-110 transition-all shadow-sm border border-red-100"
                   title="Append Progress Log"
                 >
                   <AddCircle className="w-6 h-6" />
@@ -291,7 +291,7 @@ export const MemberProfile: React.FC = () => {
               <div className="mt-10 pt-8 border-t border-gray-50 space-y-5 text-left">
                 <div className="flex items-center gap-4 group/item">
                   <div className="p-2.5 bg-gray-50 rounded-xl group-hover/item:bg-pastel-blue transition-colors">
-                    <Phone className="w-5 h-5 text-gray-400 group-hover/item:text-blue-500" />
+                    <Phone className="w-5 h-5 text-gray-400 group-hover/item:text-red-500" />
                   </div>
                   <span className="text-sm font-black text-gray-600 tracking-tight">{member.phone}</span>
                 </div>
@@ -303,7 +303,7 @@ export const MemberProfile: React.FC = () => {
                 </div>
                 <div className="flex items-center gap-4 group/item">
                   <div className="p-2.5 bg-gray-50 rounded-xl group-hover/item:bg-pastel-purple transition-colors">
-                    <User className="w-5 h-5 text-gray-400 group-hover/item:text-purple-500" />
+                    <User className="w-5 h-5 text-gray-400 group-hover/item:text-red-500" />
                   </div>
                   <div className="flex-1">
                     <span className="text-sm font-black text-gray-600 tracking-tight block">Mentor: {member.trainer_name || 'Autonomous'}</span>
@@ -326,10 +326,10 @@ export const MemberProfile: React.FC = () => {
           </div>
 
           <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-premium relative overflow-hidden group">
-            <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full blur-2xl opacity-10 transition-transform duration-700 group-hover:scale-150 ${member.status === 'active' ? 'bg-emerald-500' : 'bg-pink-500'}`} />
+            <div className={`absolute -right-4 -top-4 w-24 h-24 rounded-full blur-2xl opacity-10 transition-transform duration-700 group-hover:scale-150 ${member.status === 'active' ? 'bg-red-500' : 'bg-pink-500'}`} />
             <h3 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Phase Status</h3>
-            <div className={`p-6 rounded-[2rem] border-2 ${member.status === 'active' ? 'bg-pastel-emerald/30 border-emerald-100' : 'bg-pastel-pink/30 border-pink-100'}`}>
-              <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${member.status === 'active' ? 'text-emerald-500' : 'text-pink-500'}`}>
+            <div className={`p-6 rounded-[2rem] border-2 ${member.status === 'active' ? 'bg-pastel-emerald/30 border-red-100' : 'bg-pastel-pink/30 border-pink-100'}`}>
+              <p className={`text-[10px] font-black uppercase tracking-widest mb-1 ${member.status === 'active' ? 'text-red-500' : 'text-pink-500'}`}>
                 {member.status === 'active' ? 'Operational' : 'Phase Expired'}
               </p>
               <p className="text-xl font-black text-gray-900">Term Ends: {member.expiry_date}</p>
@@ -345,8 +345,8 @@ export const MemberProfile: React.FC = () => {
             <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-premium group">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-pastel-purple rounded-2xl border border-purple-100">
-                    <Dumbbell className="w-6 h-6 text-purple-600" />
+                  <div className="p-3 bg-pastel-purple rounded-2xl border border-red-100">
+                    <Dumbbell className="w-6 h-6 text-red-600" />
                   </div>
                   <h3 className="text-xl font-black text-gray-900 tracking-tight">Workout Protocol</h3>
                 </div>
@@ -374,20 +374,20 @@ export const MemberProfile: React.FC = () => {
             <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-premium group">
               <div className="flex items-center justify-between mb-8">
                 <div className="flex items-center gap-3">
-                  <div className="p-3 bg-pastel-emerald rounded-2xl border border-emerald-100">
-                    <GraphUp className="w-6 h-6 text-emerald-600" />
+                  <div className="p-3 bg-pastel-emerald rounded-2xl border border-red-100">
+                    <GraphUp className="w-6 h-6 text-red-600" />
                   </div>
                   <h3 className="text-xl font-black text-gray-900 tracking-tight">Growth Metrics</h3>
                 </div>
-                <button onClick={() => setIsLogModalOpen(true)} className="text-[10px] font-black text-emerald-600 uppercase tracking-widest hover:underline px-4 py-2 bg-pastel-emerald/30 rounded-full">Append Log</button>
+                <button onClick={() => setIsLogModalOpen(true)} className="text-[10px] font-black text-red-600 uppercase tracking-widest hover:underline px-4 py-2 bg-pastel-emerald/30 rounded-full">Append Log</button>
               </div>
               {progress.length > 0 ? (
                 <div className="space-y-5">
                   {progress.slice(0, 3).map((log, i) => (
-                    <div key={i} className="p-5 border-l-4 border-emerald-500 bg-pastel-emerald/10 rounded-r-2xl relative overflow-hidden">
+                    <div key={i} className="p-5 border-l-4 border-red-500 bg-pastel-emerald/10 rounded-r-2xl relative overflow-hidden">
                       <div className="flex justify-between items-center mb-2">
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">{log.date}</p>
-                        <p className="text-lg font-black text-emerald-600">{log.weight} KG</p>
+                        <p className="text-lg font-black text-red-600">{log.weight} KG</p>
                       </div>
                       <p className="text-xs font-bold text-gray-600 line-clamp-2">{log.notes || 'Steady progress maintained in current phase'}</p>
                     </div>
@@ -406,8 +406,8 @@ export const MemberProfile: React.FC = () => {
             <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-premium overflow-hidden">
               <div className="p-8 border-b border-gray-50/50 flex flex-col md:flex-row gap-6 items-center justify-between">
                 <div className="flex items-center gap-4">
-                  <div className="p-3 bg-pastel-blue rounded-2xl border border-blue-100">
-                    <History className="w-6 h-6 text-blue-600" />
+                  <div className="p-3 bg-pastel-blue rounded-2xl border border-red-100">
+                    <History className="w-6 h-6 text-red-600" />
                   </div>
                   <h3 className="text-xl font-black text-gray-900 tracking-tight">Transactional History</h3>
                 </div>
@@ -430,9 +430,9 @@ export const MemberProfile: React.FC = () => {
                       <tr key={i} className="hover:bg-gray-50/30 transition-colors">
                         <td className="px-8 py-6 text-sm font-black text-gray-400">{p.date}</td>
                         <td className="px-8 py-6 text-sm font-black text-gray-900">{p.plan_name || 'Protocol Renewal'}</td>
-                        <td className="px-8 py-6 text-base font-black text-emerald-500">₹{p.amount}</td>
+                        <td className="px-8 py-6 text-base font-black text-red-500">₹{p.amount}</td>
                         <td className="px-8 py-6">
-                          <span className="px-4 py-1.5 bg-pastel-blue/30 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-blue-100/50">
+                          <span className="px-4 py-1.5 bg-pastel-blue/30 text-red-600 rounded-xl text-[10px] font-black uppercase tracking-widest border border-red-100/50">
                             {p.method}
                           </span>
                         </td>
@@ -563,7 +563,7 @@ export const MemberProfile: React.FC = () => {
             >
               <div className="mb-10 text-center">
                 <div className="w-20 h-20 bg-pastel-emerald rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-sm">
-                  <GraphUp className="w-10 h-10 text-emerald-600" />
+                  <GraphUp className="w-10 h-10 text-red-600" />
                 </div>
                 <h2 className="text-3xl font-black text-gray-900 tracking-tight">Growth Protocol</h2>
                 <p className="text-gray-400 font-bold mt-1 uppercase text-[10px] tracking-widest">Append Physical Metrics</p>
@@ -610,7 +610,7 @@ export const MemberProfile: React.FC = () => {
                   <button
                     type="submit"
                     disabled={actionLoading}
-                    className="flex-2 py-4 bg-emerald-600 text-white rounded-[1.5rem] font-black text-sm hover:bg-emerald-700 transition-all shadow-xl shadow-emerald-500/20 disabled:opacity-50"
+                    className="flex-2 py-4 bg-red-600 text-white rounded-[1.5rem] font-black text-sm hover:bg-red-700 transition-all shadow-xl shadow-red-500/20 disabled:opacity-50"
                   >
                     {actionLoading ? 'LOGGING...' : 'AUTHORIZE LOG'}
                   </button>
@@ -640,7 +640,7 @@ export const MemberProfile: React.FC = () => {
             >
               <div className="mb-10 text-center">
                 <div className="w-20 h-20 bg-pastel-purple rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-sm">
-                  <Dumbbell className="w-10 h-10 text-purple-600" />
+                  <Dumbbell className="w-10 h-10 text-red-600" />
                 </div>
                 <h2 className="text-3xl font-black text-gray-900 tracking-tight">Workout Protocol</h2>
                 <p className="text-gray-400 font-bold mt-1 uppercase text-[10px] tracking-widest">Optimize Training Strategy</p>

@@ -84,9 +84,9 @@ export const AttendanceLogs: React.FC = () => {
                     </div>
                   </td>
                   <td className="px-8 py-6 text-center">
-                    <span className={`inline-flex items-center px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${log.role === 'admin' ? 'bg-pastel-purple text-purple-600 border border-purple-100' :
-                        log.role === 'staff' ? 'bg-pastel-blue text-blue-600 border border-blue-100' :
-                          'bg-pastel-emerald text-emerald-600 border border-emerald-100'
+                    <span className={`inline-flex items-center px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${log.role === 'admin' ? 'bg-pastel-purple text-red-600 border border-red-100' :
+                        log.role === 'staff' ? 'bg-pastel-blue text-red-600 border border-red-100' :
+                          'bg-pastel-emerald text-red-600 border border-red-100'
                       }`}>
                       {log.role}
                     </span>

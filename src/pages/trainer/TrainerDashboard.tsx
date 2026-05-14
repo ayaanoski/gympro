@@ -103,11 +103,11 @@ export const TrainerDashboard: React.FC = () => {
               disabled={actionLoading}
               className="px-8 py-4 bg-gray-900 text-white rounded-[1.5rem] font-black text-sm hover:bg-black transition-all shadow-xl shadow-gray-200 flex items-center gap-3 active:scale-95 disabled:opacity-50"
             >
-              <ClockCircle className="w-5 h-5 text-emerald-400" />
+              <ClockCircle className="w-5 h-5 text-red-400" />
               {actionLoading ? 'Initializing...' : 'Authorize Check-In'}
             </button>
           ) : (
-            <div className="px-8 py-4 bg-pastel-emerald text-emerald-600 rounded-[1.5rem] border border-emerald-100 font-black text-sm flex items-center gap-3">
+            <div className="px-8 py-4 bg-pastel-emerald text-red-600 rounded-[1.5rem] border border-red-100 font-black text-sm flex items-center gap-3">
               <CheckCircle className="w-5 h-5" />
               Operational Status: Active
             </div>
@@ -138,7 +138,7 @@ export const TrainerDashboard: React.FC = () => {
           {/* Stats Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-premium group">
-              <div className="w-14 h-14 bg-pastel-blue text-blue-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 bg-pastel-blue text-red-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <UsersGroupTwoRounded className="w-7 h-7" />
               </div>
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Active Athletes</p>
@@ -146,7 +146,7 @@ export const TrainerDashboard: React.FC = () => {
             </div>
 
             <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-premium group">
-              <div className="w-14 h-14 bg-pastel-purple text-purple-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 bg-pastel-purple text-red-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <ClipboardList className="w-7 h-7" />
               </div>
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Protocols Assigned</p>
@@ -154,7 +154,7 @@ export const TrainerDashboard: React.FC = () => {
             </div>
 
             <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-premium group">
-              <div className="w-14 h-14 bg-pastel-emerald text-emerald-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+              <div className="w-14 h-14 bg-pastel-emerald text-red-600 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <GraphUp className="w-7 h-7" />
               </div>
               <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest">Weekly Growth Logs</p>
@@ -197,7 +197,7 @@ export const TrainerDashboard: React.FC = () => {
               <h3 className="text-xl font-black text-gray-900 tracking-tight mb-8">Growth Stream</h3>
               <div className="space-y-6">
                 {progressUpdates.map((update, i) => (
-                  <div key={update.id || i} className="p-6 bg-pastel-emerald/10 border-l-4 border-emerald-500 rounded-r-2xl relative overflow-hidden group">
+                  <div key={update.id || i} className="p-6 bg-pastel-emerald/10 border-l-4 border-red-500 rounded-r-2xl relative overflow-hidden group">
                     <div className="flex justify-between items-center mb-3">
                       <div>
                         <p className="text-sm font-black text-gray-900">
@@ -205,7 +205,7 @@ export const TrainerDashboard: React.FC = () => {
                         </p>
                         <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mt-0.5">{update.date}</p>
                       </div>
-                      <span className="px-4 py-2 bg-white text-emerald-600 rounded-xl text-sm font-black shadow-sm">
+                      <span className="px-4 py-2 bg-white text-red-600 rounded-xl text-sm font-black shadow-sm">
                         {update.weight} KG
                       </span>
                     </div>
@@ -244,12 +244,12 @@ export const TrainerDashboard: React.FC = () => {
                       </div>
                     </td>
                     <td className="px-8 py-6 text-sm font-bold text-gray-600">
-                      <span className="px-4 py-1.5 bg-pastel-purple/30 text-purple-600 rounded-full border border-purple-100">
+                      <span className="px-4 py-1.5 bg-pastel-purple/30 text-red-600 rounded-full border border-red-100">
                         {member.membership_plan}
                       </span>
                     </td>
                     <td className="px-8 py-6">
-                      <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${member.status === 'active' ? 'bg-pastel-emerald text-emerald-500 border border-emerald-100' : 'bg-pastel-pink text-pink-500 border border-pink-100'
+                      <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${member.status === 'active' ? 'bg-pastel-emerald text-red-500 border border-red-100' : 'bg-pastel-pink text-pink-500 border border-pink-100'
                         }`}>
                         {member.status}
                       </span>

@@ -195,17 +195,17 @@ export const AdminDashboard: React.FC = () => {
       name: 'Total Members',
       value: stats.totalMembers,
       icon: UsersGroupTwoRounded,
-      color: 'bg-gradient-to-br from-blue-500 to-indigo-600',
-      glow: 'shadow-blue-500/20',
-      labelColor: 'text-blue-600'
+      color: 'bg-gradient-to-br from-red-500 to-red-600',
+      glow: 'shadow-red-500/20',
+      labelColor: 'text-red-600'
     },
     {
       name: 'Active Members',
       value: stats.activeMembers,
       icon: UserCheck,
-      color: 'bg-gradient-to-br from-emerald-400 to-teal-600',
-      glow: 'shadow-emerald-500/20',
-      labelColor: 'text-emerald-600'
+      color: 'bg-gradient-to-br from-red-400 to-red-600',
+      glow: 'shadow-red-500/20',
+      labelColor: 'text-red-600'
     },
     {
       name: 'Expired Members',
@@ -237,8 +237,8 @@ export const AdminDashboard: React.FC = () => {
             onClick={() => navigate('/payments')}
             className="bg-white px-8 py-5 rounded-[2.5rem] border border-gray-100 shadow-premium flex items-center gap-6 group hover:border-brand-primary/20 transition-all cursor-pointer relative overflow-hidden"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-50 to-teal-50 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="w-14 h-14 bg-gradient-to-br from-emerald-400 to-teal-600 rounded-[1.25rem] flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-emerald-500/20 relative z-10">
+            <div className="absolute inset-0 bg-gradient-to-r from-red-50 to-red-50 opacity-0 group-hover:opacity-100 transition-opacity" />
+            <div className="w-14 h-14 bg-gradient-to-br from-red-400 to-red-600 rounded-[1.25rem] flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-red-500/20 relative z-10">
               <Dollar className="w-8 h-8 text-white" />
             </div>
             <div className="relative z-10">
@@ -324,7 +324,7 @@ export const AdminDashboard: React.FC = () => {
           </div>
           <div className="space-y-4 flex-1 overflow-y-auto pr-2">
             {stats.recentPayments.length > 0 ? stats.recentPayments.map((payment, i) => (
-              <div key={i} className="flex items-center justify-between p-4 hover:bg-pastel-indigo/30 rounded-[1.5rem] transition-all duration-300 border border-transparent hover:border-indigo-100/50 group">
+              <div key={i} className="flex items-center justify-between p-4 hover:bg-pastel-indigo/30 rounded-[1.5rem] transition-all duration-300 border border-transparent hover:border-red-100/50 group">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-50 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Dollar className="w-6 h-6 text-brand-primary" />
@@ -335,8 +335,8 @@ export const AdminDashboard: React.FC = () => {
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-black text-emerald-500">+₹{payment.amount}</p>
-                  <p className="text-[10px] text-emerald-400 font-black tracking-widest uppercase">Success</p>
+                  <p className="text-sm font-black text-red-500">+₹{payment.amount}</p>
+                  <p className="text-[10px] text-red-400 font-black tracking-widest uppercase">Success</p>
                 </div>
               </div>
             )) : (
@@ -392,7 +392,7 @@ export const AdminDashboard: React.FC = () => {
                 </div>
                 <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100">
                   <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">Performance</p>
-                  <p className="text-2xl font-black text-emerald-500">+18.5%</p>
+                  <p className="text-2xl font-black text-red-500">+18.5%</p>
                 </div>
                 <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100">
                   <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">Current Range</p>
@@ -441,7 +441,7 @@ export const AdminDashboard: React.FC = () => {
                         {member.photo ? (
                           <img src={member.photo} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-indigo-400 font-black text-lg">
+                          <div className="w-full h-full flex items-center justify-center text-red-400 font-black text-lg">
                             {member.name[0]}
                           </div>
                         )}
@@ -457,10 +457,10 @@ export const AdminDashboard: React.FC = () => {
                   </td>
                   <td className="py-5 px-4">
                     <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${member.status === 'active'
-                      ? 'bg-pastel-emerald text-emerald-500 border border-emerald-100'
+                      ? 'bg-pastel-emerald text-red-500 border border-red-100'
                       : 'bg-pastel-pink text-pink-500 border border-pink-100'
                       }`}>
-                      <span className={`w-1.5 h-1.5 rounded-full mr-2 ${member.status === 'active' ? 'bg-emerald-500' : 'bg-pink-500'}`}></span>
+                      <span className={`w-1.5 h-1.5 rounded-full mr-2 ${member.status === 'active' ? 'bg-red-500' : 'bg-pink-500'}`}></span>
                       {member.status}
                     </span>
                   </td>

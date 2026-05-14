@@ -86,7 +86,7 @@ export const Login: React.FC = () => {
         className="max-w-md w-full bg-white rounded-[2rem] shadow-2xl shadow-gray-200/50 p-10 border border-gray-100"
       >
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-emerald-100 text-emerald-600 rounded-3xl mb-6">
+          <div className="inline-flex items-center justify-center w-20 h-20 bg-red-100 text-red-600 rounded-3xl mb-6">
             <Dumbbell className="w-10 h-10" />
           </div>
           <h1 className="text-4xl font-black tracking-tight text-gray-900 mb-2">
@@ -125,7 +125,7 @@ export const Login: React.FC = () => {
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-300"
+                      className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all placeholder:text-gray-300"
                       placeholder="John Wick"
                     />
                   </div>
@@ -140,7 +140,7 @@ export const Login: React.FC = () => {
                       required
                       value={formData.phone}
                       onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                      className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-300"
+                      className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all placeholder:text-gray-300"
                       placeholder="9876543210"
                     />
                   </div>
@@ -151,7 +151,7 @@ export const Login: React.FC = () => {
                     type="button"
                     onClick={() => setFormData({ ...formData, role: 'staff' })}
                     className={`p-4 rounded-2xl border-2 transition-all font-bold text-sm ${formData.role === 'staff'
-                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                      ? 'border-red-500 bg-red-50 text-red-700'
                       : 'border-gray-100 bg-gray-50 text-gray-500'
                       }`}
                   >
@@ -161,7 +161,7 @@ export const Login: React.FC = () => {
                     type="button"
                     onClick={() => setFormData({ ...formData, role: 'trainer' })}
                     className={`p-4 rounded-2xl border-2 transition-all font-bold text-sm ${formData.role === 'trainer'
-                      ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                      ? 'border-red-500 bg-red-50 text-red-700'
                       : 'border-gray-100 bg-gray-50 text-gray-500'
                       }`}
                   >
@@ -181,7 +181,7 @@ export const Login: React.FC = () => {
                 required
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-300"
+                className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all placeholder:text-gray-300"
                 placeholder="name@gym.com"
               />
             </div>
@@ -196,7 +196,7 @@ export const Login: React.FC = () => {
                 required
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition-all placeholder:text-gray-300"
+                className="w-full pl-12 pr-4 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all placeholder:text-gray-300"
                 placeholder="••••••••"
               />
             </div>
@@ -219,7 +219,7 @@ export const Login: React.FC = () => {
                 setIsSignUp(!isSignUp);
                 setError('');
               }}
-              className="ml-2 text-emerald-600 font-bold hover:underline"
+              className="ml-2 text-red-600 font-bold hover:underline"
             >
               {isSignUp ? 'Sign In' : 'Register Now'}
             </button>

@@ -39,9 +39,9 @@ export const Payments: React.FC = () => {
 
   const getMethodIcon = (method: string) => {
     switch (method) {
-      case 'UPI': return <Wallet className="w-4 h-4 text-purple-500" />;
-      case 'Card': return <Card className="w-4 h-4 text-blue-500" />;
-      default: return <Banknote className="w-4 h-4 text-emerald-500" />;
+      case 'UPI': return <Wallet className="w-4 h-4 text-red-500" />;
+      case 'Card': return <Card className="w-4 h-4 text-red-500" />;
+      default: return <Banknote className="w-4 h-4 text-red-500" />;
     }
   };
 
@@ -62,33 +62,33 @@ export const Payments: React.FC = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="bg-pastel-emerald rounded-[2.5rem] p-8 border border-emerald-100/50 shadow-premium relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-emerald-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
-          <p className="text-emerald-600/70 text-[10px] font-black uppercase tracking-widest mb-2">Total Capital Flow</p>
-          <p className="text-4xl font-black text-emerald-900 tracking-tight">₹{payments.reduce((acc, p) => acc + p.amount, 0).toLocaleString()}</p>
+        <div className="bg-pastel-emerald rounded-[2.5rem] p-8 border border-red-100/50 shadow-premium relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-24 h-24 bg-red-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+          <p className="text-red-600/70 text-[10px] font-black uppercase tracking-widest mb-2">Total Capital Flow</p>
+          <p className="text-4xl font-black text-red-900 tracking-tight">₹{payments.reduce((acc, p) => acc + p.amount, 0).toLocaleString()}</p>
           <div className="mt-4 flex items-center gap-2">
-            <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-            <span className="text-xs font-bold text-emerald-600/60 uppercase tracking-tighter">Verified Reserves</span>
+            <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+            <span className="text-xs font-bold text-red-600/60 uppercase tracking-tighter">Verified Reserves</span>
           </div>
         </div>
 
-        <div className="bg-pastel-blue rounded-[2.5rem] p-8 border border-blue-100/50 shadow-premium relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-blue-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
-          <p className="text-blue-600/70 text-[10px] font-black uppercase tracking-widest mb-2">Current Cycle Gain</p>
-          <p className="text-4xl font-black text-blue-900 tracking-tight">₹{payments.filter(p => p.date.startsWith(new Date().toISOString().slice(0, 7))).reduce((acc, p) => acc + p.amount, 0).toLocaleString()}</p>
+        <div className="bg-pastel-blue rounded-[2.5rem] p-8 border border-red-100/50 shadow-premium relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-24 h-24 bg-red-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+          <p className="text-red-600/70 text-[10px] font-black uppercase tracking-widest mb-2">Current Cycle Gain</p>
+          <p className="text-4xl font-black text-red-900 tracking-tight">₹{payments.filter(p => p.date.startsWith(new Date().toISOString().slice(0, 7))).reduce((acc, p) => acc + p.amount, 0).toLocaleString()}</p>
           <div className="mt-4 flex items-center gap-2">
-            <span className="w-2 h-2 bg-blue-500 rounded-full" />
-            <span className="text-xs font-bold text-blue-600/60 uppercase tracking-tighter">Rolling Month Total</span>
+            <span className="w-2 h-2 bg-red-500 rounded-full" />
+            <span className="text-xs font-bold text-red-600/60 uppercase tracking-tighter">Rolling Month Total</span>
           </div>
         </div>
 
-        <div className="bg-pastel-purple rounded-[2.5rem] p-8 border border-purple-100/50 shadow-premium relative overflow-hidden group">
-          <div className="absolute -right-4 -top-4 w-24 h-24 bg-purple-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
-          <p className="text-purple-600/70 text-[10px] font-black uppercase tracking-widest mb-2">Network Transactions</p>
-          <p className="text-4xl font-black text-purple-900 tracking-tight">{payments.length}</p>
+        <div className="bg-pastel-purple rounded-[2.5rem] p-8 border border-red-100/50 shadow-premium relative overflow-hidden group">
+          <div className="absolute -right-4 -top-4 w-24 h-24 bg-red-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
+          <p className="text-red-600/70 text-[10px] font-black uppercase tracking-widest mb-2">Network Transactions</p>
+          <p className="text-4xl font-black text-red-900 tracking-tight">{payments.length}</p>
           <div className="mt-4 flex items-center gap-2">
-            <span className="w-2 h-2 bg-purple-500 rounded-full" />
-            <span className="text-xs font-bold text-purple-600/60 uppercase tracking-tighter">Completed Operations</span>
+            <span className="w-2 h-2 bg-red-500 rounded-full" />
+            <span className="text-xs font-bold text-red-600/60 uppercase tracking-tighter">Completed Operations</span>
           </div>
         </div>
       </div>
@@ -136,12 +136,12 @@ export const Payments: React.FC = () => {
                     <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">{payment.member_id}</p>
                   </td>
                   <td className="px-8 py-6">
-                    <p className="text-base font-black text-emerald-500">₹{payment.amount}</p>
+                    <p className="text-base font-black text-red-500">₹{payment.amount}</p>
                   </td>
                   <td className="px-8 py-6">
-                    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${payment.method === 'UPI' ? 'bg-pastel-purple text-purple-600' :
-                      payment.method === 'Card' ? 'bg-pastel-blue text-blue-600' :
-                        'bg-pastel-emerald text-emerald-600'
+                    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${payment.method === 'UPI' ? 'bg-pastel-purple text-red-600' :
+                      payment.method === 'Card' ? 'bg-pastel-blue text-red-600' :
+                        'bg-pastel-emerald text-red-600'
                       }`}>
                       {getMethodIcon(payment.method)}
                       {payment.method}

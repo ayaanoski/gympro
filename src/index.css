@@ -4,15 +4,15 @@
 @theme {
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 
-  --color-pastel-blue: #e0f2fe;
-  --color-pastel-purple: #f5f3ff;
+  --color-pastel-blue: #fef2f2;
+  --color-pastel-purple: #fef2f2;
   --color-pastel-pink: #fdf2f8;
-  --color-pastel-emerald: #ecfdf5;
+  --color-pastel-emerald: #fef2f2;
   --color-pastel-orange: #fff7ed;
-  --color-pastel-indigo: #eef2ff;
+  --color-pastel-indigo: #fef2f2;
 
-  --color-brand-primary: #6366f1;
-  --color-brand-secondary: #8b5cf6;
+  --color-brand-primary: #dc2626;
+  --color-brand-secondary: #991b1b;
 
   --shadow-premium: 0 10px 25px -5px rgba(0, 0, 0, 0.04), 0 8px 10px -6px rgba(0, 0, 0, 0.04);
   --shadow-inner-soft: inset 0 2px 4px 0 rgba(0, 0, 0, 0.01);

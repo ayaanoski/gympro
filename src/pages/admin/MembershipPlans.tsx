@@ -74,7 +74,7 @@ export const MembershipPlans: React.FC = () => {
         {plans.map((plan) => (
           <div key={plan.id} className="group glass-card rounded-[2.5rem] p-8 flex flex-col hover:-translate-y-2 transition-all duration-500 hover:shadow-2xl">
             <div className="flex justify-between items-start mb-8">
-              <div className="w-14 h-14 bg-pastel-emerald text-emerald-500 rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-500">
+              <div className="w-14 h-14 bg-pastel-emerald text-red-500 rounded-2xl flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform duration-500">
                 <ClipboardList className="w-7 h-7" />
               </div>
               <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
@@ -106,7 +106,7 @@ export const MembershipPlans: React.FC = () => {
 
             <h3 className="text-2xl font-black text-gray-900 mb-2 leading-tight">{plan.plan_name}</h3>
             <div className="flex items-center gap-2 mb-6">
-              <span className="px-3 py-1 bg-pastel-indigo text-indigo-500 rounded-lg text-xs font-black uppercase tracking-widest">
+              <span className="px-3 py-1 bg-pastel-indigo text-red-500 rounded-lg text-xs font-black uppercase tracking-widest">
                 {plan.duration} {plan.duration_unit}
               </span>
             </div>
@@ -117,9 +117,9 @@ export const MembershipPlans: React.FC = () => {
             </div>
 
             <div className="space-y-4 mb-10 flex-1">
-              <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-colors ${plan.trainer_included ? 'bg-pastel-emerald/30 border-emerald-100/50 text-emerald-700' : 'bg-gray-50 border-gray-100 text-gray-400'}`}>
+              <div className={`flex items-center gap-3 px-4 py-3 rounded-2xl border transition-colors ${plan.trainer_included ? 'bg-pastel-emerald/30 border-red-100/50 text-red-700' : 'bg-gray-50 border-gray-100 text-gray-400'}`}>
                 {plan.trainer_included ? (
-                  <CheckCircle className="w-5 h-5 text-emerald-500" />
+                  <CheckCircle className="w-5 h-5 text-red-500" />
                 ) : (
                   <CloseCircle className="w-5 h-5 text-gray-300" />
                 )}
