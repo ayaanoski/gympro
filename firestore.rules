@@ -6,6 +6,11 @@ service cloud.firestore {
     // Helper functions
     // ============================================================
 
+    // Master admin UID — bypasses all role checks
+    function isMasterAdmin() {
+      return request.auth != null && request.auth.uid == 'OiD59a3JirYra0N0f87chcHqUyW2';
+    }
+
     function isAuthenticated() {
       return request.auth != null;
     }
@@ -15,7 +20,7 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return isAuthenticated() && getUserRole() == 'admin';
+      return isMasterAdmin() || (isAuthenticated() && getUserRole() == 'admin');
     }
 
     function isStaff() {
@@ -46,44 +51,17 @@ service cloud.firestore {
       return request.auth.uid == uid;
     }
 
-    function isOwnMember(authUid) {
-      return resource.data.auth_uid == request.auth.uid;
-    }
-
-    // Immutable fields that cannot be changed after creation
-    function hasNoImmutableChanges(immutableFields) {
-      return immutableFields.all(field =>
-        !request.resource.data.keys().hasAny([field]) ||
-        request.resource.data[field] == resource.data[field]
-      );
-    }
-
-    // Restrict writeable fields to an allowed set
-    function onlyAllowedFields(allowedFields) {
-      return request.resource.data.keys().hasOnly(allowedFields);
-    }
-
     // ============================================================
     // users/{uid}
     // ============================================================
 
     match /users/{userId} {
-
-      // Anyone authenticated can read their own profile
-      // Employees can read other employee profiles (for trainer assignment etc.)
       allow read: if isAuthenticated() && (isOwnUser(userId) || isEmployee());
-
-      // Users create their own profile during sign-up (firebase auth triggers)
       allow create: if isAuthenticated() && isOwnUser(userId);
-
-      // Users can update their own non-role fields
-      // Admins can update any user's active status and role
       allow update: if isAuthenticated() && (
         (isOwnUser(userId) && request.resource.data.keys().hasOnly(['qr_code', 'name', 'phone']))
         || isAdmin()
       );
-
-      // Only admins can delete user accounts
       allow delete: if isAdmin();
     }
 
@@ -92,27 +70,16 @@ service cloud.firestore {
     // ============================================================
 
     match /members/{memberId} {
-
-      // Employees and the member themselves can read
       allow read: if isAuthenticated() && (
-        isEmployee() || isOwnMember(resource.data.auth_uid)
+        isEmployee() || resource.data.auth_uid == request.auth.uid
       );
-
-      // Only admin/staff can create members
       allow create: if isAdminOrStaff();
-
-      // Admin: full update access
-      // Staff: update most fields except auth_uid
-      // Trainer: can only update trainer_id and trainer_name
-      // Member: no update access (profile changes handled by staff)
       allow update: if isAuthenticated() && (
         isAdmin()
         || (isStaff() && !request.resource.data.keys().hasAny(['auth_uid']))
-        || (isTrainer() && isAssignedTrainer(resource.data.trainer_id)
+        || (isTrainer() && resource.data.trainer_id == request.auth.uid
             && request.resource.data.keys().hasOnly(['trainer_id', 'trainer_name']))
       );
-
-      // Only admins can delete members
       allow delete: if isAdmin();
     }
 
@@ -121,11 +88,7 @@ service cloud.firestore {
     // ============================================================
 
     match /plans/{planId} {
-
-      // All authenticated users can read plans
       allow read: if isAuthenticated();
-
-      // Only admins can modify plans
       allow create: if isAdmin();
       allow update: if isAdmin();
       allow delete: if isAdmin();
@@ -136,24 +99,13 @@ service cloud.firestore {
     // ============================================================
 
     match /payments/{paymentId} {
-
-      // Admin/staff can read all payments
-      // Members can only read their own payments
-      allow read: if isAuthenticated() && (
-        isAdminOrStaff()
-        || (isMember() && resource.data.member_id in get(/databases/$(database)/documents/members)
-              .where('auth_uid', '==', request.auth.uid).data)
-      );
-
-      // Only admin/staff can create payments (from registration or renewal)
+      allow read: if isAdminOrStaff();
+      // Members read payments via the app — the app queries by member_id.
+      // The member doc has auth_uid which links to the Firebase Auth user.
+      // We trust the app to only query the member's own payments.
       allow create: if isAdminOrStaff();
-
-      // Payments are immutable after creation — no updates allowed
-      // Only admins can delete incorrect entries
+      allow update: if false; // Payments are immutable after creation
       allow delete: if isAdmin();
-
-      // No update — payments are final once recorded
-      allow update: if false;
     }
 
     // ============================================================
@@ -161,25 +113,13 @@ service cloud.firestore {
     // ============================================================
 
     match /staff_attendance/{attendanceId} {
-
-      // Employees can read all attendance; members can read their own
-      allow read: if isAuthenticated() && (
-        isEmployee()
-        || (isMember() && resource.data.user_id == request.auth.uid)
-      );
-
-      // Any authenticated user can mark their own attendance (check-in)
+      allow read: if isEmployee() || (isMember() && resource.data.user_id == request.auth.uid);
       allow create: if isAuthenticated() && request.resource.data.user_id == request.auth.uid;
-
-      // Users can update their own attendance (check-out: add logout_time only)
-      // Admins can update any attendance record
       allow update: if isAuthenticated() && (
         (resource.data.user_id == request.auth.uid
          && request.resource.data.keys().hasOnly(['logout_time']))
         || isAdmin()
       );
-
-      // Only admins can delete attendance records
       allow delete: if isAdmin();
     }
 
@@ -188,15 +128,9 @@ service cloud.firestore {
     // ============================================================
 
     match /workout_plans/{planId} {
-
-      // Employees and the assigned member can read
-      allow read: if isAuthenticated() && isEmployee();
-
-      // Only trainers can create/update workout plans for their members
+      allow read: if isEmployee();
       allow create: if isTrainer();
       allow update: if isTrainer();
-
-      // Only admins can delete workout plans
       allow delete: if isAdmin();
     }
 
@@ -205,9 +139,7 @@ service cloud.firestore {
     // ============================================================
 
     match /diet_plans/{planId} {
-
-      // Same as workout_plans
-      allow read: if isAuthenticated() && isEmployee();
+      allow read: if isEmployee();
       allow create: if isTrainer();
       allow update: if isTrainer();
       allow delete: if isAdmin();
@@ -218,22 +150,9 @@ service cloud.firestore {
     // ============================================================
 
     match /progress/{progressId} {
-
-      // Employees can read all progress; members can read their own
-      allow read: if isAuthenticated() && (
-        isEmployee()
-        || (isMember() && resource.data.member_id in
-            get(/databases/$(database)/documents/members)
-              .where('auth_uid', '==', request.auth.uid).data)
-      );
-
-      // Trainers and admin/staff can create progress logs
-      allow create: if isAuthenticated() && isEmployee();
-
-      // No updates — progress logs are immutable (add a new entry instead)
-      allow update: if false;
-
-      // Only admins can delete progress logs
+      allow read: if isEmployee();
+      allow create: if isEmployee();
+      allow update: if false; // Progress logs are immutable — add new entry instead
       allow delete: if isAdmin();
     }
 
@@ -242,20 +161,9 @@ service cloud.firestore {
     // ============================================================
 
     match /trainer_earnings/{earningId} {
-
-      // Trainers can read their own earnings; admins can read all
-      allow read: if isAuthenticated() && (
-        isAdmin()
-        || (isTrainer() && resource.data.trainer_id == request.auth.uid)
-      );
-
-      // Trainers create their own earning records
+      allow read: if isAdmin() || (isTrainer() && resource.data.trainer_id == request.auth.uid);
       allow create: if isTrainer() && request.resource.data.trainer_id == request.auth.uid;
-
-      // Earnings are immutable after creation
-      allow update: if false;
-
-      // Only admins can delete earnings records
+      allow update: if false; // Earnings are immutable after creation
       allow delete: if isAdmin();
     }
 
@@ -264,17 +172,9 @@ service cloud.firestore {
     // ============================================================
 
     match /member_documents/{documentId} {
-
-      // Admin/staff can read all documents
-      allow read: if isAuthenticated() && isAdminOrStaff();
-
-      // Admin/staff can upload documents
+      allow read: if isAdminOrStaff();
       allow create: if isAdminOrStaff();
-
-      // No updates — documents are immutable (upload new version instead)
-      allow update: if false;
-
-      // Only admins can delete documents
+      allow update: if false; // Documents are immutable — upload new version instead
       allow delete: if isAdmin();
     }
   }
