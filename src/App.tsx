@@ -10,6 +10,7 @@ import { MemberProfile } from './pages/shared/MemberProfile';
 import { MembershipPlans } from './pages/admin/MembershipPlans';
 import { Payments } from './pages/staff/Payments';
 import { StaffAttendance } from './pages/staff/StaffAttendance';
+import { Kiosk } from './pages/staff/Kiosk';
 import { AttendanceLogs } from './pages/admin/AttendanceLogs';
 import { Settings } from './pages/admin/Settings';
 import { MemberDashboard } from './pages/member/MemberDashboard';
@@ -65,6 +66,12 @@ export default function App() {
           <Route path="/staff-attendance" element={
             <ProtectedRoute allowedRoles={['staff']}>
               <Layout><StaffAttendance /></Layout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/kiosk" element={
+            <ProtectedRoute allowedRoles={['staff']}>
+              <Kiosk />
             </ProtectedRoute>
           } />
 

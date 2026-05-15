@@ -14,6 +14,7 @@ import {
   Logout
 } from '@solar-icons/react';
 import { ImageViewer } from '../../components/ImageViewer';
+import { QRScanner } from '../../components/QRScanner';
 
 export const MemberDashboard: React.FC = () => {
   const { user, userProfile } = useAuth();
@@ -28,6 +29,7 @@ export const MemberDashboard: React.FC = () => {
   const [viewerOpen, setViewerOpen] = useState(false);
   const [todayRecord, setTodayRecord] = useState<any>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -56,7 +58,12 @@ export const MemberDashboard: React.FC = () => {
       .where('user_id', '==', user.uid)
       .where('date', '==', today)
       .onSnapshot((snap) => {
-        setTodayRecord(snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() });
+        const records = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        // Use only records with a login_time (valid check-ins)
+        const valid = records.filter((r: any) => r.login_time);
+        // Pick the latest valid record by timestamp
+        valid.sort((a: any, b: any) => ((b.timestamp || '') > (a.timestamp || '') ? 1 : -1));
+        setTodayRecord(valid.length > 0 ? valid[0] : null);
       });
 
     return () => { unsubMember(); unsubToday(); };
@@ -117,19 +124,6 @@ export const MemberDashboard: React.FC = () => {
 
   const isExpiringSoon = daysLeft > 0 && daysLeft <= 7;
 
-  const handleCheckIn = async () => {
-    if (!user) return;
-    setActionLoading(true);
-    try {
-      await db.collection('staff_attendance').add({
-        user_id: user.uid, name: userProfile?.name || 'Member', role: 'member',
-        date: format(new Date(), 'yyyy-MM-dd'), login_time: new Date().toLocaleTimeString(),
-        timestamp: new Date().toISOString()
-      });
-    } catch (err) { console.error(err); }
-    setActionLoading(false);
-  };
-
   const handleCheckOut = async () => {
     if (!user || !todayRecord?.id) return;
     setActionLoading(true);
@@ -152,10 +146,9 @@ export const MemberDashboard: React.FC = () => {
           </div>
           <div className="flex items-center gap-3 shrink-0">
             {!todayRecord ? (
-              <button onClick={handleCheckIn} disabled={actionLoading}
-                className="flex items-center gap-2 bg-gray-900 text-white px-5 md:px-7 py-3 md:py-4 rounded-[1.5rem] font-black text-sm hover:bg-black transition-all shadow-xl shadow-gray-200 active:scale-95 disabled:opacity-50">
-                <ClockCircle className="w-5 h-5 text-red-400" />
-                {actionLoading ? '...' : 'Check In'}
+              <button onClick={() => setScannerOpen(true)} className="flex items-center gap-2 px-5 md:px-7 py-3 md:py-4 bg-gray-900 text-white rounded-[1.5rem] font-black text-sm hover:bg-black transition-all shadow-xl shadow-gray-200 active:scale-95">
+                <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="1"/></svg>
+                Scan QR
               </button>
             ) : !todayRecord.logout_time ? (
               <button onClick={handleCheckOut} disabled={actionLoading}
@@ -339,6 +332,7 @@ export const MemberDashboard: React.FC = () => {
       </div>
       {/* Image Viewer */}
       <ImageViewer src={viewerSrc} open={viewerOpen} onClose={() => setViewerOpen(false)} />
+      <QRScanner open={scannerOpen} onClose={() => setScannerOpen(false)} role="member" />
     </div>
   );
 };

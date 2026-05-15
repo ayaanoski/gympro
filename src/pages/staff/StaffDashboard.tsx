@@ -14,11 +14,13 @@ import {
 import { openWhatsApp, whatsAppTemplates } from '../../utils/whatsapp';
 import { format } from 'date-fns';
 import { useAuth } from '../../context/AuthContext';
+import { QRScanner } from '../../components/QRScanner';
 
 export const StaffDashboard: React.FC = () => {
   const { user, userProfile } = useAuth();
   const [todayRecord, setTodayRecord] = useState<any>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [scannerOpen, setScannerOpen] = useState(false);
   const [stats, setStats] = useState({
     expiringSoon: [] as any[],
     birthdays: [] as any[],
@@ -113,6 +115,10 @@ export const StaffDashboard: React.FC = () => {
           <p className="text-gray-500">Daily gym operations</p>
         </div>
         <div className="flex items-center gap-3">
+          <button onClick={() => setScannerOpen(true)} className="flex items-center gap-2 px-4 md:px-5 py-3 bg-white/80 border border-gray-200 text-gray-700 rounded-[1.5rem] font-black text-sm hover:bg-gray-50 transition-all shadow-sm backdrop-blur-sm">
+            <svg className="w-4 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="1"/></svg>
+            <span className="hidden sm:inline">QR</span>
+          </button>
           {!todayRecord ? (
             <button onClick={handleCheckIn} disabled={actionLoading}
               className="flex items-center gap-2 bg-gray-900 text-white px-4 md:px-6 py-3 rounded-[1.5rem] font-black text-sm hover:bg-black transition-all shadow-xl shadow-gray-200 active:scale-95 disabled:opacity-50">

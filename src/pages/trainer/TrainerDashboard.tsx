@@ -18,6 +18,7 @@ import {
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { ImageViewer } from '../../components/ImageViewer';
+import { QRScanner } from '../../components/QRScanner';
 
 export const TrainerDashboard: React.FC = () => {
   const { user, userProfile } = useAuth();
@@ -29,6 +30,7 @@ export const TrainerDashboard: React.FC = () => {
   const [viewerSrc, setViewerSrc] = useState('');
   const [viewerOpen, setViewerOpen] = useState(false);
   const [todayRecord, setTodayRecord] = useState<any>(null);
+  const [scannerOpen, setScannerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -148,6 +150,10 @@ export const TrainerDashboard: React.FC = () => {
           <p className="text-gray-500 mt-2 text-sm md:text-lg font-medium">{members.length} assigned members</p>
         </div>
         <div className="flex items-center gap-3">
+          <button onClick={() => setScannerOpen(true)} className="flex items-center gap-2 px-4 md:px-5 py-3 md:py-4 bg-white/80 border border-gray-200 text-gray-700 rounded-[1.5rem] font-black text-sm hover:bg-gray-50 transition-all shadow-sm backdrop-blur-sm">
+            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="1"/></svg>
+            <span className="hidden sm:inline">QR</span>
+          </button>
           {!todayRecord ? (
             <button onClick={handleCheckIn} disabled={actionLoading}
               className="flex items-center gap-2 bg-gray-900 text-white px-5 md:px-7 py-3 md:py-4 rounded-[1.5rem] font-black text-sm hover:bg-black transition-all shadow-xl shadow-gray-200 active:scale-95 disabled:opacity-50">
@@ -289,6 +295,7 @@ export const TrainerDashboard: React.FC = () => {
 
       {/* Image Viewer */}
       <ImageViewer src={viewerSrc} open={viewerOpen} onClose={() => setViewerOpen(false)} />
+      <QRScanner open={scannerOpen} onClose={() => setScannerOpen(false)} role="trainer" />
 
       {/* Athletes List */}
       <div className="bg-white rounded-[3rem] border border-gray-100 shadow-premium overflow-hidden">

@@ -54,8 +54,8 @@ export const Login: React.FC = () => {
 
           if (userDoc.exists) {
             const userData = userDoc.data();
-            if (userData?.active) {
-              // Log attendance only for active users
+            if (userData?.active && userData?.role !== 'member') {
+              // Log attendance for active employees only (members use QR scan)
               await db.collection('staff_attendance').add({
                 user_id: user.uid,
                 name: userData?.name,

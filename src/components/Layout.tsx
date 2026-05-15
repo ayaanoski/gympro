@@ -38,6 +38,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
     { name: 'Profile', path: '/trainer-profile', icon: Settings, roles: ['trainer'] },
     { name: 'Members', path: '/members', icon: UsersGroupTwoRounded, roles: ['admin', 'staff'] },
     { name: 'Plans', path: '/plans', icon: ClipboardList, roles: ['admin'] },
+    { name: 'Kiosk', path: '/kiosk', icon: Widget, roles: ['staff'] },
     { name: 'Attendance', path: '/staff-attendance', icon: Calendar, roles: ['staff'] },
     { name: 'Payments', path: '/payments', icon: Card, roles: ['admin', 'staff'] },
     { name: 'Attendance', path: '/attendance', icon: Calendar, roles: ['admin'] },
