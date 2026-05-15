@@ -10,6 +10,7 @@ interface AuthContextType {
   isAdmin: boolean;
   isStaff: boolean;
   isTrainer: boolean;
+  isMember: boolean;
   isEmployeeActive: boolean;
   loading: boolean;
   logout: () => Promise<void>;
@@ -54,7 +55,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const isAdmin = user?.uid === MASTER_ADMIN_UID || userProfile?.role === ROLES.ADMIN;
   const isStaff = userProfile?.role === ROLES.STAFF;
   const isTrainer = userProfile?.role === ROLES.TRAINER;
-  const isEmployeeActive = userProfile?.active === true || user?.uid === MASTER_ADMIN_UID;
+  const isMember = userProfile?.role === ROLES.MEMBER;
+  const isEmployeeActive = userProfile?.active === true || user?.uid === MASTER_ADMIN_UID || isMember;
 
   const logout = async () => {
     await auth.signOut();
@@ -66,6 +68,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isAdmin,
     isStaff,
     isTrainer,
+    isMember,
     isEmployeeActive,
     loading,
     logout

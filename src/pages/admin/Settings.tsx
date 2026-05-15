@@ -24,7 +24,7 @@ export const Settings: React.FC = () => {
     email: '',
     password: '',
     phone: '',
-    role: 'staff' as 'staff' | 'trainer' | 'admin',
+    role: 'staff' as 'staff' | 'trainer',
     active: true
   });
   const [isCreating, setIsCreating] = useState(false);
@@ -93,15 +93,27 @@ export const Settings: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
           <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">User Management</h1>
-          <p className="text-gray-500 mt-2 text-lg font-medium">Coordinate your staff and trainer ecosystem</p>
+          <p className="text-gray-500 mt-2 text-lg font-medium">Manage staff and trainer accounts</p>
         </div>
         <button
           onClick={() => setIsModalOpen(true)}
           className="flex items-center gap-3 bg-brand-primary text-white px-8 py-4 rounded-[1.5rem] font-black text-sm hover:bg-brand-secondary transition-all shadow-xl shadow-brand-primary/20"
         >
           <UserPlus className="w-5 h-5 transition-transform group-hover:scale-110" />
-          Onboard Employee
+          Add Employee
         </button>
+      </div>
+
+      {/* Role Summary */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        <div className="bg-pastel-blue rounded-[2rem] p-6 border border-red-100/50 shadow-premium">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Staff</p>
+          <p className="text-3xl font-black text-gray-900">{users.filter(u => u.role === 'staff').length}</p>
+        </div>
+        <div className="bg-pastel-emerald rounded-[2rem] p-6 border border-red-100/50 shadow-premium">
+          <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Trainers</p>
+          <p className="text-3xl font-black text-gray-900">{users.filter(u => u.role === 'trainer').length}</p>
+        </div>
       </div>
 
       <div className="space-y-12">
@@ -116,10 +128,10 @@ export const Settings: React.FC = () => {
               <table className="w-full text-left">
                 <thead>
                   <tr className="text-orange-400/70 text-[10px] uppercase font-black tracking-[0.2em] border-b border-orange-100/30">
-                    <th className="px-8 py-6 font-black">Candidate</th>
-                    <th className="px-8 py-6 font-black text-center">Designated Role</th>
-                    <th className="px-8 py-6 font-black">Contact Core</th>
-                    <th className="px-8 py-6 font-black text-right">Approval Actions</th>
+                    <th className="px-8 py-6 font-black">Employee</th>
+                    <th className="px-8 py-6 font-black text-center">Role</th>
+                    <th className="px-8 py-6 font-black">Contact</th>
+                    <th className="px-8 py-6 font-black text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-orange-100/30">
@@ -128,7 +140,7 @@ export const Settings: React.FC = () => {
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-4">
                           <div className="w-12 h-12 rounded-2xl flex items-center justify-center font-black text-white bg-amber-400 shadow-sm transition-transform group-hover:scale-110">
-                            {user.name[0]}
+                            {user.role === 'staff' ? 'S' : 'T'}
                           </div>
                           <div>
                             <p className="text-base font-black text-gray-900">{user.name}</p>
@@ -155,7 +167,7 @@ export const Settings: React.FC = () => {
                             className="flex items-center gap-3 bg-red-500 text-white px-6 py-3 rounded-2xl text-xs font-black hover:bg-red-600 transition-all shadow-lg shadow-red-500/20 disabled:opacity-50"
                           >
                             <UserCheck className="w-4 h-4" />
-                            {isProcessingStatus === user.id ? 'VERIFYING...' : 'AUTHORIZE'}
+                            {isProcessingStatus === user.id ? 'Approving...' : 'Approve'}
                           </button>
                           <button
                             onClick={async () => {
@@ -181,9 +193,9 @@ export const Settings: React.FC = () => {
         {/* User Management */}
         <section className="space-y-6">
           <div className="flex items-center justify-between ml-2">
-            <h2 className="text-xl font-black text-gray-900 tracking-tight">Workforce Directory</h2>
+            <h2 className="text-xl font-black text-gray-900 tracking-tight">All Employees</h2>
             <span className="px-4 py-1.5 bg-gray-100 rounded-full text-[10px] font-black text-gray-400 uppercase tracking-widest">
-              {users.length} TOTAL MEMBERS
+              {users.length} Total
             </span>
           </div>
           <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-premium overflow-hidden">
@@ -191,10 +203,10 @@ export const Settings: React.FC = () => {
               <table className="w-full text-left">
                 <thead>
                   <tr className="text-gray-400 text-[10px] uppercase font-black tracking-[0.2em] border-b border-gray-50/50">
-                    <th className="px-8 py-6 font-black">Employee Identity</th>
-                    <th className="px-8 py-6 font-black text-center">Operational Role</th>
-                    <th className="px-8 py-6 font-black">Current Status</th>
-                    <th className="px-8 py-6 font-black text-right">Access Controls</th>
+                    <th className="px-8 py-6 font-black">Employee</th>
+                    <th className="px-8 py-6 font-black text-center">Role</th>
+                    <th className="px-8 py-6 font-black">Status</th>
+                    <th className="px-8 py-6 font-black text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50/50">
@@ -203,10 +215,10 @@ export const Settings: React.FC = () => {
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-4">
                           <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black text-white shadow-sm transition-transform group-hover:scale-110 ${user.role === 'admin' ? 'bg-pastel-purple text-red-600 border border-red-100' :
-                              user.role === 'staff' ? 'bg-pastel-blue text-red-600 border border-red-100' :
-                                'bg-pastel-emerald text-red-600 border border-red-100'
+                              user.role === 'staff' ? 'bg-red-500 text-white border border-red-200' :
+                                'bg-red-500 text-white border border-red-200'
                             }`}>
-                            {user.name[0]}
+                            {user.role === 'staff' ? 'S' : user.role === 'trainer' ? 'T' : user.name[0]}
                           </div>
                           <div>
                             <p className="text-base font-black text-gray-900">{user.name}</p>
@@ -228,7 +240,7 @@ export const Settings: React.FC = () => {
                             : 'bg-pastel-pink text-pink-500 border border-pink-100'
                           }`}>
                           <span className={`w-1.5 h-1.5 rounded-full mr-2 ${user.active ? 'bg-red-500' : 'bg-pink-500'}`}></span>
-                          {user.active ? 'In Service' : 'Off Duty'}
+                          {user.active ? 'Active' : 'Inactive'}
                         </span>
                       </td>
                       <td className="px-8 py-6 text-right">
@@ -240,7 +252,7 @@ export const Settings: React.FC = () => {
                                 ? 'text-red-400 bg-red-50 hover:bg-red-100'
                                 : 'text-red-500 bg-red-50 hover:bg-red-100'
                               } disabled:opacity-50 font-black text-xs uppercase tracking-tighter`}
-                            title={user.active ? 'Suspend Credentials' : 'Restore Access'}
+                            title={user.active ? 'Suspend' : 'Activate'}
                           >
                             {isProcessingStatus === user.id ? (
                               <div className="w-5 h-5 border-2 border-current border-t-transparent rounded-full animate-spin mx-auto" />
@@ -293,24 +305,24 @@ export const Settings: React.FC = () => {
                 <div className="w-20 h-20 bg-pastel-emerald rounded-[2rem] flex items-center justify-center mx-auto mb-6 shadow-sm">
                   <UserPlus className="w-10 h-10 text-red-500" />
                 </div>
-                <h2 className="text-3xl font-black text-gray-900 tracking-tight tracking-tight">Onboard Talent</h2>
-                <p className="text-gray-400 font-bold mt-1 uppercase text-[10px] tracking-widest">New System Credentialing</p>
+                <h2 className="text-3xl font-black text-gray-900 tracking-tight tracking-tight">Add Employee</h2>
+                <p className="text-gray-400 font-bold mt-1 uppercase text-[10px] tracking-widest">Create a new employee account</p>
               </div>
 
               <form onSubmit={handleCreateUser} className="space-y-6">
                 <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Full Identity Name</label>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Full Name</label>
                   <input
                     type="text"
                     required
                     value={formData.name}
                     onChange={e => setFormData({ ...formData, name: e.target.value })}
                     className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700 placeholder:text-gray-300"
-                    placeholder="Candidate Full Name"
+                    placeholder="John Doe"
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Professional Email</label>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Email</label>
                   <input
                     type="email"
                     required
@@ -321,7 +333,7 @@ export const Settings: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Secure Password</label>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Password</label>
                   <input
                     type="password"
                     required
@@ -332,7 +344,7 @@ export const Settings: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Contact Channel</label>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Phone</label>
                   <input
                     type="tel"
                     required
@@ -343,15 +355,14 @@ export const Settings: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Specialized Role</label>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Role</label>
                   <select
                     value={formData.role}
                     onChange={e => setFormData({ ...formData, role: e.target.value as any })}
                     className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-[right_1.25rem_center] bg-no-repeat"
                   >
-                    <option value="staff">Operational Staff (Reception)</option>
-                    <option value="trainer">Performance Trainer</option>
-                    <option value="admin">System Administration</option>
+                    <option value="staff">Staff (Reception)</option>
+                    <option value="trainer">Trainer</option>
                   </select>
                 </div>
                 <div className="flex gap-4 pt-6">
@@ -360,14 +371,14 @@ export const Settings: React.FC = () => {
                     onClick={() => setIsModalOpen(false)}
                     className="flex-1 py-4 bg-gray-100 text-gray-600 rounded-[1.5rem] font-black text-sm hover:bg-gray-200 transition-all font-black"
                   >
-                    Abort
+                    Cancel
                   </button>
                   <button
                     type="submit"
                     disabled={isCreating}
                     className="flex-2 py-4 bg-brand-primary text-white rounded-[1.5rem] font-black text-sm hover:bg-brand-secondary transition-all shadow-xl shadow-brand-primary/20 disabled:opacity-50"
                   >
-                    {isCreating ? 'INITIALIZING...' : 'ACTIVATE ACCOUNT'}
+                    {isCreating ? 'Creating...' : 'Create Account'}
                   </button>
                 </div>
               </form>

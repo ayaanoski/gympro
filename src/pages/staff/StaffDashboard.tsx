@@ -64,14 +64,14 @@ export const StaffDashboard: React.FC = () => {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Staff Dashboard</h1>
           <p className="text-gray-500">Daily gym operations</p>
         </div>
         <div className="flex gap-3">
-          <button className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-red-700 transition-colors">
+          <button className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-red-700 transition-colors w-full md:w-auto justify-center">
             <UserPlus className="w-5 h-5" />
             Add Member
           </button>
@@ -90,35 +90,35 @@ export const StaffDashboard: React.FC = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
         {/* Expiry Reminders */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
+        <div className="lg:col-span-2 space-y-4 md:space-y-6">
+          <div className="bg-white p-4 md:p-6 rounded-3xl border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between mb-4 md:mb-6">
               <div className="flex items-center gap-2">
-                <ClockCircle className="w-5 h-5 text-orange-500" />
+                <ClockCircle className="w-5 h-5 text-orange-500 shrink-0" />
                 <h3 className="text-lg font-bold">Expiring Soon</h3>
               </div>
-              <span className="bg-orange-50 text-orange-600 px-2 py-1 rounded-lg text-xs font-bold">
+              <span className="bg-orange-50 text-orange-600 px-2 py-1 rounded-lg text-xs font-bold shrink-0">
                 {stats.expiringSoon.length} Members
               </span>
             </div>
 
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {stats.expiringSoon.length > 0 ? stats.expiringSoon.map((member, i) => (
-                <div key={i} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold text-gray-400">
+                <div key={i} className="flex items-center justify-between p-3 md:p-4 bg-gray-50 rounded-2xl gap-2">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center font-bold text-gray-400 shrink-0">
                       {member.name[0]}
                     </div>
-                    <div>
-                      <p className="text-sm font-bold text-gray-900">{member.name}</p>
-                      <p className="text-xs text-gray-500">Expires: {member.expiry_date}</p>
+                    <div className="min-w-0">
+                      <p className="text-sm font-bold text-gray-900 truncate">{member.name}</p>
+                      <p className="text-xs text-gray-500 truncate">Expires: {member.expiry_date}</p>
                     </div>
                   </div>
                   <button
                     onClick={() => sendExpiryReminder(member)}
-                    className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition-colors"
+                    className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition-colors shrink-0"
                   >
                     <ChatRoundDots className="w-5 h-5" />
                   </button>
@@ -129,21 +129,21 @@ export const StaffDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-3xl border border-gray-100 shadow-sm">
-            <div className="flex items-center justify-between mb-6">
+          <div className="bg-white p-4 md:p-6 rounded-3xl border border-gray-100 shadow-sm">
+            <div className="flex items-center justify-between mb-4 md:mb-6">
               <div className="flex items-center gap-2">
-                <Dollar className="w-5 h-5 text-red-600" />
+                <Dollar className="w-5 h-5 text-red-600 shrink-0" />
                 <h3 className="text-lg font-bold">Recent Payments</h3>
               </div>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {stats.recentPayments.length > 0 ? stats.recentPayments.map((payment, i) => (
-                <div key={i} className="flex items-center justify-between p-3 border-b border-gray-50 last:border-0">
-                  <div>
+                <div key={i} className="flex items-center justify-between p-3 border-b border-gray-50 last:border-0 gap-2">
+                  <div className="min-w-0">
                     <p className="text-sm font-bold text-gray-900">₹{payment.amount}</p>
-                    <p className="text-xs text-gray-500">{payment.date} • {payment.method}</p>
+                    <p className="text-xs text-gray-500 truncate">{payment.date} • {payment.method}</p>
                   </div>
-                  <AltArrowRight className="w-4 h-4 text-gray-300" />
+                  <AltArrowRight className="w-4 h-4 text-gray-300 shrink-0" />
                 </div>
               )) : (
                 <p className="text-center text-gray-500 py-4">No recent payments</p>
@@ -153,19 +153,19 @@ export const StaffDashboard: React.FC = () => {
         </div>
 
         {/* Birthdays */}
-        <div className="space-y-6">
-          <div className="bg-red-600 p-6 rounded-3xl text-white shadow-lg shadow-red-200">
-            <div className="flex items-center gap-2 mb-6">
-              <Gift className="w-6 h-6" />
+        <div className="space-y-4 md:space-y-6">
+          <div className="bg-red-600 p-4 md:p-6 rounded-3xl text-white shadow-lg shadow-red-200">
+            <div className="flex items-center gap-2 mb-4 md:mb-6">
+              <Gift className="w-6 h-6 shrink-0" />
               <h3 className="text-lg font-bold">Today's Birthdays</h3>
             </div>
-            <div className="space-y-4">
+            <div className="space-y-3 md:space-y-4">
               {stats.birthdays.length > 0 ? stats.birthdays.map((member, i) => (
-                <div key={i} className="flex items-center justify-between bg-white/10 p-3 rounded-2xl backdrop-blur-sm">
-                  <p className="text-sm font-medium">{member.name}</p>
+                <div key={i} className="flex items-center justify-between bg-white/10 p-3 rounded-2xl backdrop-blur-sm gap-2">
+                  <p className="text-sm font-medium truncate min-w-0">{member.name}</p>
                   <button
                     onClick={() => sendBirthdayWish(member)}
-                    className="p-2 bg-white text-red-600 rounded-xl hover:bg-red-50 transition-colors"
+                    className="p-2 bg-white text-red-600 rounded-xl hover:bg-red-50 transition-colors shrink-0"
                   >
                     <ChatRoundDots className="w-4 h-4" />
                   </button>

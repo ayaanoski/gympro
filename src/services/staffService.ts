@@ -24,7 +24,18 @@ export const staffService = {
 
   addMember: async (memberData: any) => {
     const docRef = await db.collection('members').add({
-      ...memberData,
+      name: memberData.name,
+      phone: memberData.phone,
+      email: memberData.email,
+      dob: memberData.dob,
+      membership_plan: memberData.membership_plan,
+      category: memberData.category || 'normal',
+      discount_percent: memberData.discount_percent || 0,
+      trainer_id: memberData.trainer_id || '',
+      trainer_name: memberData.trainer_name || 'Not Assigned',
+      expiry_date: memberData.expiry_date,
+      start_date: memberData.start_date,
+      auth_uid: memberData.auth_uid || '',
       status: 'active',
       created_at: new Date().toISOString()
     });
@@ -36,6 +47,8 @@ export const staffService = {
       amount: memberData.initial_payment,
       method: memberData.payment_method,
       plan_name: memberData.membership_plan,
+      category: memberData.category || 'normal',
+      discount_percent: memberData.discount_percent || 0,
       date: new Date().toISOString().split('T')[0],
       timestamp: new Date().toISOString()
     });
@@ -47,7 +60,9 @@ export const staffService = {
     await db.collection('members').doc(memberId).update({
       expiry_date: renewalData.new_expiry,
       status: 'active',
-      membership_plan: renewalData.plan_name
+      membership_plan: renewalData.plan_name,
+      category: renewalData.category || 'normal',
+      discount_percent: renewalData.discount_percent || 0
     });
 
     await db.collection('payments').add({
@@ -56,6 +71,8 @@ export const staffService = {
       amount: renewalData.amount,
       method: renewalData.payment_method,
       plan_name: renewalData.plan_name,
+      category: renewalData.category || 'normal',
+      discount_percent: renewalData.discount_percent || 0,
       date: new Date().toISOString().split('T')[0],
       timestamp: new Date().toISOString()
     });

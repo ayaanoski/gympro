@@ -46,46 +46,46 @@ export const Payments: React.FC = () => {
   };
 
   return (
-    <div className="space-y-10 pb-10 font-sans">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div className="space-y-6 md:space-y-10 pb-10 font-sans">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6">
         <div>
-          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">Financial Ledger</h1>
-          <p className="text-gray-500 mt-2 text-lg font-medium">Analyze and scale your revenue streams</p>
+          <h1 className="text-2xl md:text-4xl font-extrabold text-gray-900 tracking-tight">Financial Ledger</h1>
+          <p className="text-gray-500 mt-2 text-sm md:text-lg font-medium">Analyze and scale your revenue streams</p>
         </div>
         <button
           onClick={exportToExcel}
-          className="flex items-center gap-3 bg-gray-900 text-white px-8 py-4 rounded-[1.5rem] font-black text-sm hover:bg-black transition-all shadow-xl shadow-gray-200"
+          className="flex items-center gap-3 bg-gray-900 text-white px-6 md:px-8 py-4 rounded-[1.5rem] font-black text-sm hover:bg-black transition-all shadow-xl shadow-gray-200 w-full md:w-auto justify-center"
         >
           <Download className="w-5 h-5 transition-transform group-hover:translate-y-1" />
           Extract Financial Data
         </button>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-        <div className="bg-pastel-emerald rounded-[2.5rem] p-8 border border-red-100/50 shadow-premium relative overflow-hidden group">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
+        <div className="bg-pastel-emerald rounded-[2.5rem] p-5 md:p-8 border border-red-100/50 shadow-premium relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-red-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
           <p className="text-red-600/70 text-[10px] font-black uppercase tracking-widest mb-2">Total Capital Flow</p>
-          <p className="text-4xl font-black text-red-900 tracking-tight">₹{payments.reduce((acc, p) => acc + p.amount, 0).toLocaleString()}</p>
+          <p className="text-2xl md:text-4xl font-black text-red-900 tracking-tight">₹{payments.reduce((acc, p) => acc + p.amount, 0).toLocaleString()}</p>
           <div className="mt-4 flex items-center gap-2">
             <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
             <span className="text-xs font-bold text-red-600/60 uppercase tracking-tighter">Verified Reserves</span>
           </div>
         </div>
 
-        <div className="bg-pastel-blue rounded-[2.5rem] p-8 border border-red-100/50 shadow-premium relative overflow-hidden group">
+        <div className="bg-pastel-blue rounded-[2.5rem] p-5 md:p-8 border border-red-100/50 shadow-premium relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-red-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
           <p className="text-red-600/70 text-[10px] font-black uppercase tracking-widest mb-2">Current Cycle Gain</p>
-          <p className="text-4xl font-black text-red-900 tracking-tight">₹{payments.filter(p => p.date.startsWith(new Date().toISOString().slice(0, 7))).reduce((acc, p) => acc + p.amount, 0).toLocaleString()}</p>
+          <p className="text-2xl md:text-4xl font-black text-red-900 tracking-tight">₹{payments.filter(p => p.date.startsWith(new Date().toISOString().slice(0, 7))).reduce((acc, p) => acc + p.amount, 0).toLocaleString()}</p>
           <div className="mt-4 flex items-center gap-2">
             <span className="w-2 h-2 bg-red-500 rounded-full" />
             <span className="text-xs font-bold text-red-600/60 uppercase tracking-tighter">Rolling Month Total</span>
           </div>
         </div>
 
-        <div className="bg-pastel-purple rounded-[2.5rem] p-8 border border-red-100/50 shadow-premium relative overflow-hidden group">
+        <div className="bg-pastel-purple rounded-[2.5rem] p-5 md:p-8 border border-red-100/50 shadow-premium relative overflow-hidden group">
           <div className="absolute -right-4 -top-4 w-24 h-24 bg-red-500/5 rounded-full blur-2xl group-hover:scale-150 transition-transform duration-700" />
           <p className="text-red-600/70 text-[10px] font-black uppercase tracking-widest mb-2">Network Transactions</p>
-          <p className="text-4xl font-black text-red-900 tracking-tight">{payments.length}</p>
+          <p className="text-2xl md:text-4xl font-black text-red-900 tracking-tight">{payments.length}</p>
           <div className="mt-4 flex items-center gap-2">
             <span className="w-2 h-2 bg-red-500 rounded-full" />
             <span className="text-xs font-bold text-red-600/60 uppercase tracking-tighter">Completed Operations</span>
@@ -94,7 +94,7 @@ export const Payments: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-premium overflow-hidden">
-        <div className="p-8 border-b border-gray-50/50 flex flex-col md:flex-row gap-6">
+        <div className="p-4 md:p-8 border-b border-gray-50/50 flex flex-col md:flex-row gap-4 md:gap-6">
           <div className="relative flex-1 group">
             <Magnifer className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 transition-colors group-focus-within:text-brand-primary" />
             <input
@@ -105,7 +105,7 @@ export const Payments: React.FC = () => {
               className="w-full pl-14 pr-6 py-4 bg-gray-50 border border-transparent rounded-[1.5rem] focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-medium text-gray-600"
             />
           </div>
-          <button className="flex items-center gap-3 px-8 py-4 bg-gray-900 text-white rounded-[1.5rem] font-black text-sm hover:scale-105 transition-all shadow-lg shadow-gray-200">
+          <button className="flex items-center gap-3 px-6 md:px-8 py-4 bg-gray-900 text-white rounded-[1.5rem] font-black text-sm hover:scale-105 transition-all shadow-lg shadow-gray-200 w-full md:w-auto justify-center">
             <Filter className="w-5 h-5" />
             Refine Search
           </button>
@@ -115,31 +115,31 @@ export const Payments: React.FC = () => {
           <table className="w-full text-left">
             <thead>
               <tr className="text-gray-400 text-[10px] uppercase font-black tracking-[0.2em] border-b border-gray-50/50">
-                <th className="px-8 py-6 font-black">Timeline</th>
-                <th className="px-8 py-6 font-black">Payer Identity</th>
-                <th className="px-8 py-6 font-black">Capital Units</th>
-                <th className="px-8 py-6 font-black">Protocol</th>
-                <th className="px-8 py-6 font-black">Strategic Package</th>
+                <th className="px-4 md:px-8 py-4 md:py-6 font-black">Timeline</th>
+                <th className="px-4 md:px-8 py-4 md:py-6 font-black">Payer Identity</th>
+                <th className="px-4 md:px-8 py-4 md:py-6 font-black">Capital Units</th>
+                <th className="px-4 md:px-8 py-4 md:py-6 font-black">Protocol</th>
+                <th className="px-4 md:px-8 py-4 md:py-6 font-black">Strategic Package</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50/50">
               {filteredPayments.length > 0 ? filteredPayments.map((payment) => (
                 <tr key={payment.id} className="group hover:bg-gray-50/30 transition-colors">
-                  <td className="px-8 py-6">
-                    <div className="flex items-center gap-3 text-sm font-black text-gray-400">
-                      <Calendar className="w-4 h-4 text-brand-primary/40" />
+                  <td className="px-4 md:px-8 py-4 md:py-6">
+                    <div className="flex items-center gap-2 md:gap-3 text-sm font-black text-gray-400 whitespace-nowrap">
+                      <Calendar className="w-4 h-4 text-brand-primary/40 shrink-0" />
                       {payment.date}
                     </div>
                   </td>
-                  <td className="px-8 py-6">
-                    <p className="text-base font-black text-gray-900">{payment.member_name}</p>
-                    <p className="text-xs text-gray-400 font-bold uppercase tracking-widest">{payment.member_id}</p>
+                  <td className="px-4 md:px-8 py-4 md:py-6">
+                    <p className="text-sm md:text-base font-black text-gray-900 truncate max-w-[120px] md:max-w-none">{payment.member_name}</p>
+                    <p className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-widest truncate max-w-[120px] md:max-w-none">{payment.member_id}</p>
                   </td>
-                  <td className="px-8 py-6">
-                    <p className="text-base font-black text-red-500">₹{payment.amount}</p>
+                  <td className="px-4 md:px-8 py-4 md:py-6">
+                    <p className="text-sm md:text-base font-black text-red-500">₹{payment.amount}</p>
                   </td>
-                  <td className="px-8 py-6">
-                    <div className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${payment.method === 'UPI' ? 'bg-pastel-purple text-red-600' :
+                  <td className="px-4 md:px-8 py-4 md:py-6">
+                    <div className={`inline-flex items-center gap-1.5 md:gap-2 px-2 md:px-4 py-1.5 md:py-2 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${payment.method === 'UPI' ? 'bg-pastel-purple text-red-600' :
                       payment.method === 'Card' ? 'bg-pastel-blue text-red-600' :
                         'bg-pastel-emerald text-red-600'
                       }`}>
@@ -147,20 +147,20 @@ export const Payments: React.FC = () => {
                       {payment.method}
                     </div>
                   </td>
-                  <td className="px-8 py-6">
-                    <span className="px-4 py-1.5 bg-gray-50 rounded-lg border border-gray-100 text-[10px] font-black uppercase tracking-widest text-gray-500">
+                  <td className="px-4 md:px-8 py-4 md:py-6">
+                    <span className="px-2 md:px-4 py-1.5 bg-gray-50 rounded-lg border border-gray-100 text-[10px] font-black uppercase tracking-widest text-gray-500 whitespace-nowrap">
                       {payment.plan_name}
                     </span>
                   </td>
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={5} className="px-8 py-20 text-center">
+                  <td colSpan={5} className="px-4 md:px-8 py-12 md:py-20 text-center">
                     <div className="flex flex-col items-center">
-                      <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-                        <Banknote className="w-8 h-8 text-gray-200" />
+                      <div className="w-16 md:w-20 h-16 md:h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                        <Banknote className="w-6 md:w-8 h-6 md:h-8 text-gray-200" />
                       </div>
-                      <p className="text-gray-400 font-black text-lg">No financial events recorded</p>
+                      <p className="text-gray-400 font-black text-base md:text-lg">No financial events recorded</p>
                     </div>
                   </td>
                 </tr>

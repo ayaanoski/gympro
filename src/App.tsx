@@ -11,6 +11,8 @@ import { MembershipPlans } from './pages/admin/MembershipPlans';
 import { Payments } from './pages/staff/Payments';
 import { AttendanceLogs } from './pages/admin/AttendanceLogs';
 import { Settings } from './pages/admin/Settings';
+import { MemberDashboard } from './pages/member/MemberDashboard';
+import { MemberSettings } from './pages/member/MemberSettings';
 
 export default function App() {
   return (
@@ -19,9 +21,11 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           
-          <Route element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>}>
-            <Route path="/dashboard" element={<Dashboard />} />
-          </Route>
+          <Route path="/dashboard" element={
+            <ProtectedRoute>
+              <Layout><Dashboard /></Layout>
+            </ProtectedRoute>
+          } />
 
           <Route path="/members" element={
             <ProtectedRoute allowedRoles={['admin', 'staff']}>
@@ -56,6 +60,18 @@ export default function App() {
           <Route path="/settings" element={
             <ProtectedRoute requireAdmin>
               <Layout><Settings /></Layout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/my-dashboard" element={
+            <ProtectedRoute allowedRoles={['member']}>
+              <Layout><MemberDashboard /></Layout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/my-profile" element={
+            <ProtectedRoute allowedRoles={['member']}>
+              <Layout><MemberSettings /></Layout>
             </ProtectedRoute>
           } />
 

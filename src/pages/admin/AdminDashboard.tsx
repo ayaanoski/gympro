@@ -24,7 +24,14 @@ export const AdminDashboard: React.FC = () => {
     expiringSoon: 0,
     totalRevenue: 0,
     recentPayments: [] as any[],
-    recentAdmissions: [] as any[]
+    recentAdmissions: [] as any[],
+    growthRates: {
+      totalMembers: 0,
+      activeMembers: 0,
+      expiredMembers: 0,
+      expiringSoon: 0
+    },
+    revenuePerformance: 0
   });
   const [revenueData, setRevenueData] = useState<any[]>([]);
   const [timeRange, setTimeRange] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>('monthly');
@@ -106,6 +113,28 @@ export const AdminDashboard: React.FC = () => {
         });
       }
 
+      // Calculate growth rates from real data
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(now.getDate() - 30);
+
+      const joinedLast30Days = members.filter((m: any) => {
+        const start = new Date(m.start_date);
+        return start >= thirtyDaysAgo && start <= now;
+      }).length;
+
+      const totalGrowth = total > 0 ? Math.round((joinedLast30Days / total) * 100) : 0;
+      const activeGrowth = (total - expired) > 0 ? Math.round((active / Math.max(total - expired, 1)) * 100) : 0;
+      const expiredGrowth = total > 0 ? Math.round((expired / total) * 100) : 0;
+      const expiringGrowth = active > 0 ? Math.round((expiring / active) * 100) : 0;
+
+      // Calculate revenue performance (last period vs previous)
+      let revenueGrowth = 0;
+      if (chartData.length >= 2) {
+        const last = chartData[chartData.length - 1].revenue;
+        const prev = chartData[chartData.length - 2].revenue;
+        revenueGrowth = prev > 0 ? Math.round(((last - prev) / prev) * 100) : (last > 0 ? 100 : 0);
+      }
+
       setStats({
         totalMembers: total,
         activeMembers: active,
@@ -113,7 +142,14 @@ export const AdminDashboard: React.FC = () => {
         expiringSoon: expiring,
         totalRevenue: totalRev,
         recentPayments: recentPayments,
-        recentAdmissions: members.slice(0, 5)
+        recentAdmissions: members.slice(0, 5),
+        growthRates: {
+          totalMembers: totalGrowth,
+          activeMembers: activeGrowth,
+          expiredMembers: expiredGrowth,
+          expiringSoon: expiringGrowth
+        },
+        revenuePerformance: revenueGrowth
       });
       setRevenueData(chartData);
     };
@@ -194,112 +230,119 @@ export const AdminDashboard: React.FC = () => {
     {
       name: 'Total Members',
       value: stats.totalMembers,
+      growth: stats.growthRates.totalMembers,
       icon: UsersGroupTwoRounded,
       color: 'bg-gradient-to-br from-red-500 to-red-600',
       glow: 'shadow-red-500/20',
-      labelColor: 'text-red-600'
+      labelColor: 'text-red-600',
+      growthLabel: 'New (30d)'
     },
     {
       name: 'Active Members',
       value: stats.activeMembers,
+      growth: stats.growthRates.activeMembers,
       icon: UserCheck,
       color: 'bg-gradient-to-br from-red-400 to-red-600',
       glow: 'shadow-red-500/20',
-      labelColor: 'text-red-600'
+      labelColor: 'text-red-600',
+      growthLabel: 'Retention'
     },
     {
       name: 'Expired Members',
       value: stats.expiredMembers,
+      growth: stats.growthRates.expiredMembers,
       icon: UserCross,
       color: 'bg-gradient-to-br from-pink-400 to-rose-600',
       glow: 'shadow-pink-500/20',
-      labelColor: 'text-pink-600'
+      labelColor: 'text-pink-600',
+      growthLabel: 'Churn'
     },
     {
       name: 'Expiring Soon',
       value: stats.expiringSoon,
+      growth: stats.growthRates.expiringSoon,
       icon: ClockCircle,
       color: 'bg-gradient-to-br from-orange-400 to-amber-600',
       glow: 'shadow-orange-500/20',
-      labelColor: 'text-orange-600'
+      labelColor: 'text-orange-600',
+      growthLabel: 'At Risk'
     },
   ];
 
   return (
-    <div className="space-y-10 pb-10">
-      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+    <div className="space-y-6 md:space-y-10 pb-10">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 md:gap-6">
         <div>
-          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight text-brand-primary">Admin Dashboard</h1>
-          <p className="text-gray-500 mt-2 text-lg font-medium">Monitoring your gym's pulse and performance</p>
+          <h1 className="text-2xl md:text-4xl font-extrabold text-gray-900 tracking-tight text-brand-primary">Admin Dashboard</h1>
+          <p className="text-gray-500 mt-2 text-sm md:text-lg font-medium">Monitoring your gym's pulse and performance</p>
         </div>
         <div className="flex items-center gap-4">
           <div
             onClick={() => navigate('/payments')}
-            className="bg-white px-8 py-5 rounded-[2.5rem] border border-gray-100 shadow-premium flex items-center gap-6 group hover:border-brand-primary/20 transition-all cursor-pointer relative overflow-hidden"
+            className="bg-white px-4 md:px-8 py-4 md:py-5 rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 shadow-premium flex items-center gap-4 md:gap-6 group hover:border-brand-primary/20 transition-all cursor-pointer relative overflow-hidden"
           >
-            <div className="absolute inset-0 bg-gradient-to-r from-red-50 to-red-50 opacity-0 group-hover:opacity-100 transition-opacity" />
-            <div className="w-14 h-14 bg-gradient-to-br from-red-400 to-red-600 rounded-[1.25rem] flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-red-500/20 relative z-10">
-              <Dollar className="w-8 h-8 text-white" />
+            <div className="w-10 md:w-14 h-10 md:h-14 bg-gradient-to-br from-red-400 to-red-600 rounded-[1.25rem] flex items-center justify-center group-hover:scale-110 transition-transform shadow-lg shadow-red-500/20 relative z-10">
+              <Dollar className="w-5 md:w-8 h-5 md:h-8 text-white" />
             </div>
             <div className="relative z-10">
               <p className="text-[10px] text-gray-400 uppercase font-black tracking-[0.2em] mb-1">Portfolio Value</p>
-              <p className="text-3xl font-black text-gray-900 leading-none">₹{stats.totalRevenue.toLocaleString()}</p>
+              <p className="text-xl md:text-3xl font-black text-gray-900 leading-none">₹{stats.totalRevenue.toLocaleString()}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Stat Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
         {statCards.map((card) => (
           <div
             key={card.name}
             onClick={() => navigate('/members')}
-            className="group relative p-8 rounded-[2.5rem] bg-white border border-gray-100 shadow-premium hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 overflow-hidden cursor-pointer"
+            className="group relative p-5 md:p-8 rounded-[2rem] md:rounded-[2.5rem] bg-white border border-gray-100 shadow-premium hover:shadow-2xl transition-all duration-500 hover:-translate-y-1 md:hover:-translate-y-2 overflow-hidden cursor-pointer"
           >
             {/* Background Glow */}
             <div className={`absolute -right-10 -top-10 w-40 h-40 ${card.color} opacity-[0.03] blur-3xl group-hover:opacity-10 transition-opacity duration-500`} />
 
-            <div className={`w-14 h-14 ${card.color} rounded-2xl flex items-center justify-center text-white mb-8 shadow-xl ${card.glow} group-hover:scale-110 transition-transform duration-500`}>
-              <card.icon className="w-7 h-7" />
+            <div className={`w-10 md:w-14 h-10 md:h-14 ${card.color} rounded-2xl flex items-center justify-center text-white mb-4 md:mb-8 shadow-xl ${card.glow} group-hover:scale-110 transition-transform duration-500`}>
+              <card.icon className="w-5 md:w-7 h-5 md:h-7" />
             </div>
 
             <p className="text-gray-400 text-[10px] font-black uppercase tracking-[0.2em] leading-none mb-3">{card.name}</p>
-            <p className="text-4xl font-black text-gray-900 tracking-tight">{card.value}</p>
+            <p className="text-2xl md:text-4xl font-black text-gray-900 tracking-tight">{card.value}</p>
 
-            <div className="mt-6 flex items-center gap-2">
-              <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${card.labelColor} bg-current/5`}>
-                <GraphUp className="w-3.5 h-3.5" />
-                <span className="text-[10px] font-black uppercase">+12.4%</span>
+            <div className="mt-4 md:mt-6 flex items-center gap-2">
+              <div className={`flex items-center gap-1.5 px-2 md:px-3 py-1 md:py-1.5 rounded-full ${card.labelColor} bg-current/5`}>
+                <GraphUp className="w-3 md:w-3.5 h-3 md:h-3.5" />
+                <span className="text-[10px] font-black uppercase">{card.growth}%</span>
               </div>
-              <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wider">Growth</span>
+              <span className="text-[10px] font-bold text-gray-300 uppercase tracking-wider">{card.growthLabel}</span>
             </div>
           </div>
         ))}
       </div>
 
       {/* Charts Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-8">
         <div
           onClick={() => setIsChartExpanded(true)}
-          className="lg:col-span-2 bg-white p-10 rounded-[3rem] border border-gray-100 shadow-premium relative overflow-hidden cursor-pointer group/chart"
+          className="lg:col-span-2 bg-white p-5 md:p-10 rounded-[2rem] md:rounded-[3rem] border border-gray-100 shadow-premium relative overflow-hidden cursor-pointer group/chart"
         >
-          <div className="absolute top-0 right-0 w-64 h-64 bg-pastel-indigo/30 blur-3xl rounded-full -mr-20 -mt-20 opacity-50 group-hover/chart:bg-brand-primary/10 transition-colors" />
+          <div className="absolute top-0 right-0 w-48 md:w-64 h-48 md:h-64 bg-pastel-indigo/30 blur-3xl rounded-full -mr-20 -mt-20 opacity-50 group-hover/chart:bg-brand-primary/10 transition-colors" />
 
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-12 relative z-10">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 md:gap-6 mb-6 md:mb-12 relative z-10">
             <div>
-              <h2 className="text-2xl font-black text-gray-900 tracking-tight">Revenue Analysis</h2>
+              <h2 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">Revenue Analysis</h2>
               <p className="text-gray-400 font-bold mt-1 uppercase text-[10px] tracking-widest flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-brand-primary animate-pulse" />
-                Click to expand analytics
+                Click to expand
               </p>
             </div>
-            <div className="flex p-1 bg-gray-50 rounded-2xl border border-gray-100/50" onClick={(e) => e.stopPropagation()}>
+            <div className="flex p-1 bg-gray-50 rounded-2xl border border-gray-100/50 overflow-x-auto" onClick={(e) => e.stopPropagation()}>
               {(['daily', 'weekly', 'monthly', 'yearly'] as const).map((range) => (
                 <button
                   key={range}
                   onClick={() => setTimeRange(range)}
-                  className={`px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all ${timeRange === range
+                  className={`px-3 md:px-5 py-2 md:py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest whitespace-nowrap transition-all ${timeRange === range
                     ? 'bg-white text-brand-primary shadow-sm ring-1 ring-gray-100'
                     : 'text-gray-400 hover:text-gray-600'
                     }`}
@@ -310,21 +353,21 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
 
-          <div className="h-80 relative z-10 -mx-4">
+          <div className="h-60 md:h-80 relative z-10 -mx-4">
             <RenderChart idPrefix="dashboard" />
           </div>
         </div>
 
-        <div className="bg-white p-8 rounded-[3rem] border border-gray-100 shadow-premium flex flex-col h-full cursor-pointer hover:border-brand-primary/20 transition-all" onClick={() => navigate('/payments')}>
-          <div className="flex items-center justify-between mb-10">
+        <div className="bg-white p-5 md:p-8 rounded-[2rem] md:rounded-[3rem] border border-gray-100 shadow-premium flex flex-col h-full cursor-pointer hover:border-brand-primary/20 transition-all" onClick={() => navigate('/payments')}>
+          <div className="flex items-center justify-between mb-6 md:mb-10">
             <div>
-              <h3 className="text-xl font-black text-gray-900">Recent Payments</h3>
+              <h3 className="text-lg md:text-xl font-black text-gray-900">Recent Payments</h3>
               <p className="text-sm text-gray-400 font-medium mt-1">Latest transactions</p>
             </div>
           </div>
-          <div className="space-y-4 flex-1 overflow-y-auto pr-2">
+          <div className="space-y-3 md:space-y-4 flex-1 overflow-y-auto pr-2">
             {stats.recentPayments.length > 0 ? stats.recentPayments.map((payment, i) => (
-              <div key={i} className="flex items-center justify-between p-4 hover:bg-pastel-indigo/30 rounded-[1.5rem] transition-all duration-300 border border-transparent hover:border-red-100/50 group">
+              <div key={i} className="flex items-center justify-between p-3 md:p-4 hover:bg-pastel-indigo/30 rounded-[1.5rem] transition-all duration-300 border border-transparent hover:border-red-100/50 group">
                 <div className="flex items-center gap-4">
                   <div className="w-12 h-12 bg-white rounded-2xl shadow-sm border border-gray-50 flex items-center justify-center group-hover:scale-110 transition-transform">
                     <Dollar className="w-6 h-6 text-brand-primary" />
@@ -354,7 +397,7 @@ export const AdminDashboard: React.FC = () => {
       {/* Expanded Chart Modal */}
       <AnimatePresence>
         {isChartExpanded && (
-          <div className="fixed inset-0 z-[100] flex items-center justify-center p-6">
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 md:p-6">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -366,42 +409,44 @@ export const AdminDashboard: React.FC = () => {
               initial={{ opacity: 0, scale: 0.9, y: 30 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.9, y: 30 }}
-              className="relative w-full max-w-6xl bg-white rounded-[3rem] shadow-2xl p-12 overflow-hidden border border-white/50"
+              className="relative w-full max-w-6xl bg-white rounded-[2rem] md:rounded-[3rem] shadow-2xl p-5 md:p-12 overflow-hidden border border-white/50 max-h-[90vh] overflow-y-auto"
             >
-              <div className="flex items-center justify-between mb-12">
+              <div className="flex items-start md:items-center justify-between mb-6 md:mb-12 gap-4">
                 <div>
-                  <h2 className="text-3xl font-black text-gray-900 tracking-tight flex items-center gap-4">
-                    <GraphUp className="w-8 h-8 text-brand-primary" />
-                    Strategic Revenue Intelligence
+                  <h2 className="text-xl md:text-3xl font-black text-gray-900 tracking-tight flex items-center gap-3 md:gap-4">
+                    <GraphUp className="w-6 md:w-8 h-6 md:h-8 text-brand-primary" />
+                    Revenue Analytics
                   </h2>
-                  <p className="text-gray-400 font-bold mt-2 uppercase text-xs tracking-[0.2em]">Detailed Growth Analytics • {timeRange} perspective</p>
+                  <p className="text-gray-400 font-bold mt-2 uppercase text-[10px] md:text-xs tracking-[0.2em]">{timeRange} perspective</p>
                 </div>
-                <button onClick={() => setIsChartExpanded(false)} className="p-4 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all">
-                  <CloseCircle className="w-10 h-10" />
+                <button onClick={() => setIsChartExpanded(false)} className="p-2 md:p-4 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all shrink-0">
+                  <CloseCircle className="w-6 md:w-10 h-6 md:h-10" />
                 </button>
               </div>
 
-              <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 mb-12">
-                <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100">
-                  <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">Peak revenue</p>
-                  <p className="text-2xl font-black text-gray-900">₹{Math.max(...revenueData.map(d => d.revenue)).toLocaleString()}</p>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-8 mb-6 md:mb-12">
+                <div className="bg-gray-50 p-4 md:p-6 rounded-2xl md:rounded-3xl border border-gray-100">
+                  <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">Peak</p>
+                  <p className="text-lg md:text-2xl font-black text-gray-900">₹{Math.max(...revenueData.map(d => d.revenue)).toLocaleString()}</p>
                 </div>
-                <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100">
-                  <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">Average / Period</p>
-                  <p className="text-2xl font-black text-gray-900">₹{Math.floor(revenueData.reduce((a, b) => a + b.revenue, 0) / revenueData.length).toLocaleString()}</p>
+                <div className="bg-gray-50 p-4 md:p-6 rounded-2xl md:rounded-3xl border border-gray-100">
+                  <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">Average</p>
+                  <p className="text-lg md:text-2xl font-black text-gray-900">₹{Math.floor(revenueData.reduce((a, b) => a + b.revenue, 0) / revenueData.length).toLocaleString()}</p>
                 </div>
-                <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100">
+                <div className="bg-gray-50 p-4 md:p-6 rounded-2xl md:rounded-3xl border border-gray-100">
                   <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">Performance</p>
-                  <p className="text-2xl font-black text-red-500">+18.5%</p>
+                  <p className={`text-lg md:text-2xl font-black ${stats.revenuePerformance >= 0 ? 'text-red-500' : 'text-pink-500'}`}>
+                    {stats.revenuePerformance >= 0 ? '+' : ''}{stats.revenuePerformance}%
+                  </p>
                 </div>
-                <div className="bg-gray-50 p-6 rounded-3xl border border-gray-100">
-                  <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">Current Range</p>
-                  <p className="text-2xl font-black text-brand-primary uppercase">{timeRange}</p>
+                <div className="bg-gray-50 p-4 md:p-6 rounded-2xl md:rounded-3xl border border-gray-100">
+                  <p className="text-[10px] font-black uppercase text-gray-400 tracking-widest mb-1">Range</p>
+                  <p className="text-lg md:text-2xl font-black text-brand-primary uppercase">{timeRange}</p>
                 </div>
               </div>
 
-              <div className="h-[500px] -mx-8">
-                <RenderChart height={500} idPrefix="modal" />
+              <div className="h-64 md:h-[500px] -mx-2 md:-mx-8">
+                <RenderChart height={300} idPrefix="modal" />
               </div>
             </motion.div>
           </div>
@@ -409,15 +454,15 @@ export const AdminDashboard: React.FC = () => {
       </AnimatePresence>
 
       {/* Recent Admissions */}
-      <div className="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-premium overflow-hidden">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+      <div className="bg-white p-4 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 shadow-premium overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6 md:mb-10">
           <div>
-            <h3 className="text-xl font-black text-gray-900">Recent New Admissions</h3>
-            <p className="text-sm text-gray-400 font-medium mt-1">Latest members to join the family</p>
+            <h3 className="text-lg md:text-xl font-black text-gray-900">Recent New Admissions</h3>
+            <p className="text-sm text-gray-400 font-medium mt-1">Latest members to join</p>
           </div>
           <button
             onClick={() => navigate('/members')}
-            className="px-6 py-3 bg-brand-primary/10 text-brand-primary rounded-2xl text-sm font-black hover:bg-brand-primary hover:text-white transition-all duration-300"
+            className="px-5 md:px-6 py-3 bg-brand-primary/10 text-brand-primary rounded-2xl text-sm font-black hover:bg-brand-primary hover:text-white transition-all duration-300 w-full md:w-auto text-center"
           >
             View All Members
           </button>
@@ -426,50 +471,50 @@ export const AdminDashboard: React.FC = () => {
           <table className="w-full text-left">
             <thead>
               <tr className="text-gray-400 text-[10px] uppercase font-black tracking-[0.2em]">
-                <th className="pb-6 px-4">Member</th>
-                <th className="pb-6 px-4">Plan Type</th>
-                <th className="pb-6 px-4">Status</th>
-                <th className="pb-6 px-4 text-right">Joined Date</th>
+                <th className="pb-4 md:pb-6 px-2 md:px-4">Member</th>
+                <th className="pb-4 md:pb-6 px-2 md:px-4">Plan</th>
+                <th className="pb-4 md:pb-6 px-2 md:px-4">Status</th>
+                <th className="pb-4 md:pb-6 px-2 md:px-4 text-right">Joined</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
               {stats.recentAdmissions.length > 0 ? stats.recentAdmissions.map((member, i) => (
                 <tr key={i} className="group hover:bg-gray-50/50 transition-colors cursor-pointer" onClick={() => navigate(`/members/${member.id}`)}>
-                  <td className="py-5 px-4">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-pastel-indigo rounded-2xl overflow-hidden border-2 border-white shadow-sm flex-shrink-0">
+                  <td className="py-3 md:py-5 px-2 md:px-4">
+                    <div className="flex items-center gap-3 md:gap-4">
+                      <div className="w-8 md:w-12 h-8 md:h-12 bg-pastel-indigo rounded-xl md:rounded-2xl overflow-hidden border-2 border-white shadow-sm shrink-0">
                         {member.photo ? (
                           <img src={member.photo} alt="" className="w-full h-full object-cover" />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-red-400 font-black text-lg">
+                          <div className="w-full h-full flex items-center justify-center text-red-400 font-black text-xs md:text-lg">
                             {member.name[0]}
                           </div>
                         )}
                       </div>
-                      <div>
-                        <p className="text-sm font-black text-gray-900">{member.name}</p>
-                        <p className="text-xs text-gray-400 font-bold">{member.phone}</p>
+                      <div className="min-w-0">
+                        <p className="text-xs md:text-sm font-black text-gray-900 truncate">{member.name}</p>
+                        <p className="text-[10px] md:text-xs text-gray-400 font-bold truncate">{member.phone}</p>
                       </div>
                     </div>
                   </td>
-                  <td className="py-5 px-4 font-bold text-gray-600 text-sm">
-                    <span className="px-3 py-1 bg-gray-100 rounded-lg">{member.membership_plan}</span>
+                  <td className="py-3 md:py-5 px-2 md:px-4 font-bold text-gray-600 text-[10px] md:text-sm">
+                    <span className="px-2 md:px-3 py-1 bg-gray-100 rounded-lg truncate inline-block max-w-[80px] md:max-w-none">{member.membership_plan}</span>
                   </td>
-                  <td className="py-5 px-4">
-                    <span className={`inline-flex items-center px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest ${member.status === 'active'
+                  <td className="py-3 md:py-5 px-2 md:px-4">
+                    <span className={`inline-flex items-center px-2 md:px-4 py-1 rounded-full text-[8px] md:text-[10px] font-black uppercase tracking-widest whitespace-nowrap ${member.status === 'active'
                       ? 'bg-pastel-emerald text-red-500 border border-red-100'
                       : 'bg-pastel-pink text-pink-500 border border-pink-100'
                       }`}>
-                      <span className={`w-1.5 h-1.5 rounded-full mr-2 ${member.status === 'active' ? 'bg-red-500' : 'bg-pink-500'}`}></span>
+                      <span className={`w-1 h-1.5 md:w-1.5 md:h-1.5 rounded-full mr-1 md:mr-2 ${member.status === 'active' ? 'bg-red-500' : 'bg-pink-500'}`}></span>
                       {member.status}
                     </span>
                   </td>
-                  <td className="py-5 px-4 text-sm font-black text-gray-400 text-right">{member.start_date}</td>
+                  <td className="py-3 md:py-5 px-2 md:px-4 text-[10px] md:text-sm font-black text-gray-400 text-right whitespace-nowrap">{member.start_date}</td>
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={4} className="py-12 text-center">
-                    <p className="text-gray-300 font-black text-lg">No admissions found</p>
+                  <td colSpan={4} className="py-8 md:py-12 text-center">
+                    <p className="text-gray-300 font-black text-sm md:text-lg">No admissions found</p>
                   </td>
                 </tr>
               )}

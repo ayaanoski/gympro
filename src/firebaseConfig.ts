@@ -1,12 +1,11 @@
-
 export const firebaseConfig = {
-  apiKey: "AIzaSyBfRvwu5VLX_p0v0Az_-01rBHM1eL9utrM",
-  authDomain: "revverse-aff79.firebaseapp.com",
-  projectId: "revverse-aff79",
-  storageBucket: "revverse-aff79.firebasestorage.app",
-  messagingSenderId: "971174588378",
-  appId: "1:971174588378:web:2674ec9b76684acda39ae3",
-  measurementId: "G-RKN4Z54FSM"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
 };
 
 
