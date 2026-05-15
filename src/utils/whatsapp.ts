@@ -19,7 +19,7 @@ export const whatsAppTemplates = {
     `🌟 *Welcome to GYMPRO!* 🌟\n\nHi ${name},\n\nWe're thrilled to have you join our community! Your fitness journey starts today.\n\n📋 *Membership Details:*\n• Plan: ${plan}\n• Status: Active\n• Valid Until: ${expiry}\n\n💪 Let's smash those goals together! If you have any questions, feel free to reach out.\n\nStay fit,\n*Team GYMPRO*`,
 
   welcomeWithCredentials: (name: string, plan: string, expiry: string, email: string, password: string) =>
-    `🌟 *Welcome to GYMPRO!* 🌟\n\nHi ${name},\n\nYour membership is now active! You can log in to your personal portal to track your workouts, diet plan, and membership.\n\n📋 *Membership Details:*\n• Plan: ${plan}\n• Status: Active\n• Valid Until: ${expiry}\n\n🔑 *Login Credentials:*\n• Email: ${email}\n• Password: ${password}\n\n🌐 *Portal:* https://revverse-aff79.firebaseapp.com/my-dashboard\n\nPlease change your password after logging in.\n\nStay fit,\n*Team GYMPRO*`,
+    `🌟 *Welcome to GYMPRO!* 🌟\n\nHi ${name},\n\nYour membership is now active! You can log in to your personal portal to track your workouts, diet plan, and membership.\n\n📋 *Membership Details:*\n• Plan: ${plan}\n• Status: Active\n• Valid Until: ${expiry}\n\n🔑 *Login Credentials:*\n• Email: ${email}\n• Password: ${password}\n\n🌐 *Portal:* https://gympro-lemon.vercel.app/\n\nPlease change your password after logging in.\n\nStay fit,\n*Team GYMPRO*`,
 
   renewal: (name: string, plan: string, expiry: string) =>
     `✅ *Membership Renewed!*\n\nHi ${name},\n\nYour membership has been successfully renewed. Thank you for continuing your fitness journey with us!\n\n📈 *Updated Details:*\n• New Plan: ${plan}\n• New Expiry: ${expiry}\n\nKeep pushing your limits! 🏋️‍♂️\n\nBest regards,\n*Team GYMPRO*`,

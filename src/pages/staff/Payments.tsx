@@ -8,9 +8,11 @@ import {
   Calendar,
   Card,
   Wallet,
-  Banknote
+  Banknote,
+  TrashBinTrash
 } from '@solar-icons/react';
 import * as XLSX from 'xlsx';
+import { db } from '../../firebase';
 
 export const Payments: React.FC = () => {
   const [payments, setPayments] = useState<any[]>([]);
@@ -36,6 +38,15 @@ export const Payments: React.FC = () => {
     p.member_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.member_id?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  const handleDelete = async (paymentId: string, memberName: string) => {
+    if (!window.confirm(`Delete payment for ${memberName}? This cannot be undone.`)) return;
+    try {
+      await db.collection('payments').doc(paymentId).delete();
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const getMethodIcon = (method: string) => {
     switch (method) {
@@ -120,6 +131,7 @@ export const Payments: React.FC = () => {
                 <th className="px-4 md:px-8 py-4 md:py-6 font-black">Capital Units</th>
                 <th className="px-4 md:px-8 py-4 md:py-6 font-black">Protocol</th>
                 <th className="px-4 md:px-8 py-4 md:py-6 font-black">Strategic Package</th>
+                <th className="px-4 md:px-8 py-4 md:py-6 font-black text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50/50">
@@ -152,10 +164,19 @@ export const Payments: React.FC = () => {
                       {payment.plan_name}
                     </span>
                   </td>
+                  <td className="px-4 md:px-8 py-4 md:py-6 text-right">
+                    <button
+                      onClick={() => handleDelete(payment.id, payment.member_name)}
+                      className="p-2 md:p-3 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all shadow-sm bg-white"
+                      title="Delete Payment"
+                    >
+                      <TrashBinTrash className="w-4 md:w-5 h-4 md:h-5" />
+                    </button>
+                  </td>
                 </tr>
               )) : (
                 <tr>
-                  <td colSpan={5} className="px-4 md:px-8 py-12 md:py-20 text-center">
+                  <td colSpan={6} className="px-4 md:px-8 py-12 md:py-20 text-center">
                     <div className="flex flex-col items-center">
                       <div className="w-16 md:w-20 h-16 md:h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
                         <Banknote className="w-6 md:w-8 h-6 md:h-8 text-gray-200" />

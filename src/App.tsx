@@ -9,10 +9,15 @@ import { MembersList } from './pages/staff/MembersList';
 import { MemberProfile } from './pages/shared/MemberProfile';
 import { MembershipPlans } from './pages/admin/MembershipPlans';
 import { Payments } from './pages/staff/Payments';
+import { StaffAttendance } from './pages/staff/StaffAttendance';
 import { AttendanceLogs } from './pages/admin/AttendanceLogs';
 import { Settings } from './pages/admin/Settings';
 import { MemberDashboard } from './pages/member/MemberDashboard';
 import { MemberSettings } from './pages/member/MemberSettings';
+import { MemberAttendance } from './pages/member/MemberAttendance';
+import { TrainerEarnings } from './pages/trainer/TrainerEarnings';
+import { TrainerClients } from './pages/trainer/TrainerClients';
+import { TrainerProfile } from './pages/trainer/TrainerProfile';
 
 export default function App() {
   return (
@@ -57,6 +62,12 @@ export default function App() {
             </ProtectedRoute>
           } />
 
+          <Route path="/staff-attendance" element={
+            <ProtectedRoute allowedRoles={['staff']}>
+              <Layout><StaffAttendance /></Layout>
+            </ProtectedRoute>
+          } />
+
           <Route path="/settings" element={
             <ProtectedRoute requireAdmin>
               <Layout><Settings /></Layout>
@@ -72,6 +83,30 @@ export default function App() {
           <Route path="/my-profile" element={
             <ProtectedRoute allowedRoles={['member']}>
               <Layout><MemberSettings /></Layout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/my-attendance" element={
+            <ProtectedRoute allowedRoles={['member']}>
+              <Layout><MemberAttendance /></Layout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/trainer-earnings" element={
+            <ProtectedRoute allowedRoles={['trainer']}>
+              <Layout><TrainerEarnings /></Layout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/my-clients" element={
+            <ProtectedRoute allowedRoles={['trainer']}>
+              <Layout><TrainerClients /></Layout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/trainer-profile" element={
+            <ProtectedRoute allowedRoles={['trainer']}>
+              <Layout><TrainerProfile /></Layout>
             </ProtectedRoute>
           } />
 

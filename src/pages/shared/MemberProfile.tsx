@@ -22,6 +22,7 @@ import { openWhatsApp, whatsAppTemplates } from '../../utils/whatsapp';
 import { format } from 'date-fns';
 import { motion, AnimatePresence } from 'motion/react';
 import { staffService } from '../../services/staffService';
+import { ImageViewer } from '../../components/ImageViewer';
 import { trainerService } from '../../services/trainerService';
 import { adminService } from '../../services/adminService';
 import { db } from '../../firebase';
@@ -49,6 +50,11 @@ export const MemberProfile: React.FC = () => {
   const [isWorkoutModalOpen, setIsWorkoutModalOpen] = useState(false);
   const [workoutText, setWorkoutText] = useState('');
   const [workoutImageUrl, setWorkoutImageUrl] = useState('');
+  const [isDietModalOpen, setIsDietModalOpen] = useState(false);
+  const [dietText, setDietText] = useState('');
+  const [dietImageUrl, setDietImageUrl] = useState('');
+  const [viewerSrc, setViewerSrc] = useState('');
+  const [viewerOpen, setViewerOpen] = useState(false);
   const [workoutUploading, setWorkoutUploading] = useState(false);
   const workoutFileRef = useRef<HTMLInputElement>(null);
   const [actionLoading, setActionLoading] = useState(false);
@@ -65,13 +71,14 @@ export const MemberProfile: React.FC = () => {
   });
   const [logData, setLogData] = useState({
     weight: '',
+    height: '',
     body_fat: '',
     notes: ''
   });
   const [trainers, setTrainers] = useState<any[]>([]);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editData, setEditData] = useState({
-    name: '', phone: '', email: '', dob: '', category: 'normal', discount_percent: 0, membership_plan: ''
+    name: '', phone: '', email: '', dob: '', category: 'normal', discount_percent: 0, membership_plan: '', trainer_fee: 0
   });
 
   useEffect(() => {
@@ -224,9 +231,8 @@ export const MemberProfile: React.FC = () => {
     setActionLoading(true);
     try {
       await trainerService.addProgressLog(id, logData);
-      openWhatsApp(member.phone, whatsAppTemplates.progress(member.name, logData.weight, logData.body_fat, logData.notes));
       setIsLogModalOpen(false);
-      setLogData({ weight: '', body_fat: '', notes: '' });
+      setLogData({ weight: '', height: '', body_fat: '', notes: '' });
     } catch (err: any) {
       alert(`Failed to log: ${err.message || 'Database error'}`);
     } finally {
@@ -305,6 +311,21 @@ export const MemberProfile: React.FC = () => {
     e.target.value = '';
   };
 
+  const handleSaveDiet = async () => {
+    if (!id || !user) return;
+    setActionLoading(true);
+    try {
+      const data = { description: dietText, image_url: dietImageUrl, updated_at: new Date().toISOString() };
+      if (dietPlan) {
+        await db.collection('diet_plans').doc(dietPlan.id).update(data);
+      } else {
+        await db.collection('diet_plans').add({ member_id: id, ...data, created_by: user.uid, created_at: new Date().toISOString() });
+      }
+      setIsDietModalOpen(false);
+    } catch { alert('Failed to save diet plan'); }
+    finally { setActionLoading(false); }
+  };
+
   const handleSaveWorkout = async () => {
     if (!id || !user) return;
     setActionLoading(true);
@@ -324,7 +345,8 @@ export const MemberProfile: React.FC = () => {
       dob: member.dob || '',
       category: member.category || 'normal',
       discount_percent: member.discount_percent || 0,
-      membership_plan: member.membership_plan || ''
+      membership_plan: member.membership_plan || '',
+      trainer_fee: member.trainer_fee || 0
     });
     setIsEditModalOpen(true);
   };
@@ -341,7 +363,8 @@ export const MemberProfile: React.FC = () => {
         dob: editData.dob,
         category: editData.category,
         discount_percent: editData.discount_percent,
-        membership_plan: editData.membership_plan
+        membership_plan: editData.membership_plan,
+        trainer_fee: editData.trainer_fee
       });
       setIsEditModalOpen(false);
     } catch (err: any) {
@@ -494,28 +517,37 @@ export const MemberProfile: React.FC = () => {
         {/* Details Section */}
         <div className="lg:col-span-2 space-y-6 md:space-y-10">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10">
-            {/* Diet Plan — view only, set by Trainer from their dashboard */}
-            {!isTrainer && (
+            {/* Diet Plan */}
             <div className="bg-white p-5 md:p-8 rounded-[2.5rem] border border-gray-100 shadow-premium group">
-              <div className="flex items-center gap-3 mb-6 md:mb-8">
-                <div className="p-2 md:p-3 bg-pastel-emerald rounded-2xl border border-red-100 shrink-0">
-                  <FileText className="w-5 md:w-6 h-5 md:h-6 text-red-600" />
+              <div className="flex items-center justify-between mb-6 md:mb-8 gap-3">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="p-2 md:p-3 bg-pastel-emerald rounded-2xl border border-red-100 shrink-0">
+                    <FileText className="w-5 md:w-6 h-5 md:h-6 text-red-600" />
+                  </div>
+                  <h3 className="text-lg md:text-xl font-black text-gray-900 tracking-tight truncate">Diet Plan</h3>
                 </div>
-                <h3 className="text-lg md:text-xl font-black text-gray-900 tracking-tight truncate">Diet Plan</h3>
+                {isTrainer && (
+                  <button onClick={() => { setDietText(dietPlan?.description || ''); setDietImageUrl(dietPlan?.image_url || ''); setIsDietModalOpen(true); }} className="text-[10px] font-black text-brand-primary uppercase tracking-widest hover:underline px-3 md:px-4 py-2 bg-pastel-indigo/30 rounded-full shrink-0">Edit</button>
+                )}
               </div>
-              {dietPlan?.description ? (
-                <div className="p-4 md:p-6 bg-gray-50/50 rounded-2xl border border-transparent group-hover:bg-white group-hover:shadow-md group-hover:border-gray-100 transition-all">
-                  <p className="text-sm font-bold text-gray-600 leading-relaxed whitespace-pre-wrap">
-                    {dietPlan.description}
-                  </p>
+              {dietPlan?.description || dietPlan?.image_url ? (
+                <div className="space-y-4">
+                  {dietPlan.description && (
+                    <div className="p-4 md:p-6 bg-gray-50/50 rounded-2xl border border-transparent group-hover:bg-white group-hover:shadow-md group-hover:border-gray-100 transition-all">
+                      <p className="text-sm font-bold text-gray-600 leading-relaxed whitespace-pre-wrap">{dietPlan.description}</p>
+                    </div>
+                  )}
+                  {dietPlan.image_url && (
+                    <img src={dietPlan.image_url} alt="Diet" className="w-full max-h-64 object-contain rounded-2xl border border-gray-200 bg-gray-50 cursor-pointer" onClick={() => { setViewerSrc(dietPlan.image_url); setViewerOpen(true); }} />
+                  )}
                 </div>
               ) : (
                 <div className="text-center py-8 md:py-12 bg-gray-50/50 rounded-[2rem] border border-dashed border-gray-200">
+                  <FileText className="w-8 h-8 text-gray-200 mx-auto mb-3" />
                   <p className="text-gray-400 font-black text-sm uppercase tracking-widest">No diet plan set</p>
                 </div>
               )}
             </div>
-            )}
 
             {/* Latest Progress */}
             <div className="bg-white p-5 md:p-8 rounded-[2.5rem] border border-gray-100 shadow-premium group">
@@ -529,23 +561,7 @@ export const MemberProfile: React.FC = () => {
                 <button onClick={() => setIsLogModalOpen(true)} className="text-[10px] font-black text-red-600 uppercase tracking-widest hover:underline px-3 md:px-4 py-2 bg-pastel-emerald/30 rounded-full shrink-0">Add Log</button>
               </div>
 
-              {/* Height */}
-              <div className="mb-4 p-4 bg-gray-50/50 rounded-2xl">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Height</p>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="number" step="0.1"
-                    value={height}
-                    onChange={(e) => setHeight(e.target.value)}
-                    onBlur={handleHeightUpdate}
-                    className="w-24 px-3 py-2 bg-white border border-gray-200 rounded-xl text-sm font-bold text-gray-700 focus:border-brand-primary/30 outline-none"
-                    placeholder="cm"
-                  />
-                  <span className="text-xs font-black text-gray-400">CM</span>
-                </div>
-              </div>
-
-              {/* Weight */}
+              {/* Latest Progress */}
               {latestProgress ? (
                 <div className="p-4 md:p-5 border-l-4 border-red-500 bg-pastel-emerald/10 rounded-r-2xl">
                   <div className="flex justify-between items-center gap-2">
@@ -555,9 +571,14 @@ export const MemberProfile: React.FC = () => {
                     </div>
                     <p className="text-[10px] font-black text-gray-400">{latestProgress.date}</p>
                   </div>
-                  {latestProgress.body_fat && (
-                    <p className="text-xs font-bold text-gray-500 mt-1">Body Fat: {latestProgress.body_fat}%</p>
-                  )}
+                  <div className="flex gap-4 mt-2">
+                    {latestProgress.height && (
+                      <p className="text-xs font-bold text-gray-500">Height: {latestProgress.height} CM</p>
+                    )}
+                    {latestProgress.body_fat && (
+                      <p className="text-xs font-bold text-gray-500">Body Fat: {latestProgress.body_fat}%</p>
+                    )}
+                  </div>
                   {latestProgress.notes && (
                     <p className="text-xs font-bold text-gray-600 mt-2 line-clamp-2">{latestProgress.notes}</p>
                   )}
@@ -591,7 +612,7 @@ export const MemberProfile: React.FC = () => {
                   </div>
                 )}
                 {workoutPlan?.image_url && (
-                  <img src={workoutPlan.image_url} alt="Workout" className="w-full max-h-64 object-cover rounded-2xl border border-gray-200 cursor-pointer" onClick={() => window.open(workoutPlan.image_url, '_blank')} />
+                  <img src={workoutPlan.image_url} alt="Workout" className="w-full max-h-64 object-cover rounded-2xl border border-gray-200 cursor-pointer" onClick={() => { setViewerSrc(workoutPlan.image_url); setViewerOpen(true); }} />
                 )}
               </div>
             ) : (
@@ -847,6 +868,11 @@ export const MemberProfile: React.FC = () => {
                       className="w-full px-4 md:px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700" />
                   </div>
                   <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Height (CM)</label>
+                    <input type="number" step="0.1" value={logData.height} onChange={e => setLogData({ ...logData, height: e.target.value })}
+                      className="w-full px-4 md:px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700" />
+                  </div>
+                  <div>
                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Body Fat (%)</label>
                     <input type="number" step="0.1" value={logData.body_fat} onChange={e => setLogData({ ...logData, body_fat: e.target.value })}
                       className="w-full px-4 md:px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700" />
@@ -936,6 +962,74 @@ export const MemberProfile: React.FC = () => {
         )}
       </AnimatePresence>
 
+      {/* Diet Plan Modal — Trainer only */}
+      <AnimatePresence>
+        {isDietModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 md:p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setIsDietModalOpen(false)} className="absolute inset-0 bg-black/30 backdrop-blur-md" />
+            <motion.div initial={{ opacity: 0, scale: 0.95, y: 40 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 40 }} transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-lg bg-white rounded-[2rem] md:rounded-[3rem] shadow-2xl p-5 md:p-10 border border-white/50 max-h-[90vh] overflow-y-auto">
+              <div className="flex items-center justify-between mb-6 md:mb-8">
+                <div>
+                  <h2 className="text-xl md:text-2xl font-black text-gray-900 tracking-tight">Diet Plan</h2>
+                  <p className="text-gray-400 font-black mt-1 uppercase text-[10px] tracking-widest">{member?.name}</p>
+                </div>
+                <button onClick={() => setIsDietModalOpen(false)} className="p-2 md:p-3 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all shrink-0">
+                  <CloseCircle className="w-6 md:w-8 h-6 md:h-8" />
+                </button>
+              </div>
+              <input type="file" ref={workoutFileRef} accept="image/*" onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (!file || !CLOUD_NAME || !UPLOAD_PRESET) return;
+                if (file.size > 3 * 1024 * 1024) { alert('File must be less than 3 MB'); return; }
+                setWorkoutUploading(true);
+                const fd = new FormData();
+                fd.append('file', file);
+                fd.append('upload_preset', UPLOAD_PRESET);
+                fd.append('api_key', API_KEY);
+                fetch(`https://api.cloudinary.com/v1_1/${CLOUD_NAME}/image/upload`, { method: 'POST', body: fd })
+                  .then(r => r.json()).then(d => { if (d.secure_url) setDietImageUrl(d.secure_url); }).catch(() => alert('Upload failed'))
+                  .finally(() => setWorkoutUploading(false));
+                e.target.value = '';
+              }} className="hidden" />
+              <div className="space-y-5">
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Diet Description</label>
+                  <textarea value={dietText} onChange={e => setDietText(e.target.value)}
+                    className="w-full px-4 md:px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700 h-40 resize-none"
+                    placeholder="Meal plans, diet goals, restrictions..." />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Image (optional)</label>
+                  <div className="flex items-center gap-4">
+                    <button type="button" onClick={() => workoutFileRef.current?.click()} disabled={workoutUploading}
+                      className="flex items-center gap-2 px-5 py-3 bg-gray-50 border border-dashed border-gray-200 rounded-2xl hover:border-red-300 hover:bg-red-50/30 transition-all font-bold text-sm text-gray-500">
+                      {workoutUploading ? <div className="w-4 h-4 border-2 border-brand-primary border-t-transparent rounded-full animate-spin" /> : <Upload className="w-5 h-5 text-red-500" />}
+                      {workoutUploading ? 'Uploading...' : dietImageUrl ? 'Change Image' : 'Upload Image'}
+                    </button>
+                    {dietImageUrl && (
+                      <button type="button" onClick={() => window.open(dietImageUrl, '_blank')} className="flex items-center gap-2 px-5 py-3 bg-pastel-blue rounded-2xl hover:bg-red-50 transition-all font-bold text-sm text-red-600">
+                        <Eye className="w-5 h-5" /> View
+                      </button>
+                    )}
+                  </div>
+                  {dietImageUrl && <img src={dietImageUrl} alt="Diet" className="mt-4 w-full max-h-48 object-cover rounded-2xl border border-gray-200" />}
+                </div>
+                <div className="flex gap-3 md:gap-4 pt-4">
+                  <button type="button" onClick={() => setIsDietModalOpen(false)} className="flex-1 py-4 bg-gray-100 text-gray-600 rounded-[1.5rem] font-black text-xs md:text-sm hover:bg-gray-200 transition-all">Cancel</button>
+                  <button onClick={handleSaveDiet} disabled={actionLoading} className="flex-[2] py-4 bg-brand-primary text-white rounded-[1.5rem] font-black text-xs md:text-sm hover:bg-brand-secondary transition-all shadow-xl shadow-brand-primary/20 disabled:opacity-50">
+                    {actionLoading ? 'Saving...' : 'Save'}
+                  </button>
+                </div>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Image Viewer */}
+      <ImageViewer src={viewerSrc} open={viewerOpen} onClose={() => setViewerOpen(false)} />
+
       {/* Edit Member Modal — Admin / Staff */}
       <AnimatePresence>
         {isEditModalOpen && (
@@ -1006,6 +1100,11 @@ export const MemberProfile: React.FC = () => {
                   <div>
                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Discount (%)</label>
                     <input type="number" min="0" max="100" value={editData.discount_percent} onChange={e => setEditData({ ...editData, discount_percent: Math.max(0, Math.min(100, parseInt(e.target.value) || 0)) })}
+                      className="w-full px-4 md:px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700" />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Trainer Fee (₹)</label>
+                    <input type="number" min="0" value={editData.trainer_fee} onChange={e => setEditData({ ...editData, trainer_fee: parseInt(e.target.value) || 0 })}
                       className="w-full px-4 md:px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700" />
                   </div>
                 </div>

@@ -33,6 +33,7 @@ export const staffService = {
       discount_percent: memberData.discount_percent || 0,
       trainer_id: memberData.trainer_id || '',
       trainer_name: memberData.trainer_name || 'Not Assigned',
+      trainer_fee: memberData.trainer_fee || 0,
       expiry_date: memberData.expiry_date,
       start_date: memberData.start_date,
       auth_uid: memberData.auth_uid || '',

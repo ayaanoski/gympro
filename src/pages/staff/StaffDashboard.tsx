@@ -7,12 +7,18 @@ import {
   Gift,
   Dollar,
   AltArrowRight,
-  ChatRoundDots
+  ChatRoundDots,
+  CheckCircle,
+  Logout
 } from '@solar-icons/react';
 import { openWhatsApp, whatsAppTemplates } from '../../utils/whatsapp';
 import { format } from 'date-fns';
+import { useAuth } from '../../context/AuthContext';
 
 export const StaffDashboard: React.FC = () => {
+  const { user, userProfile } = useAuth();
+  const [todayRecord, setTodayRecord] = useState<any>(null);
+  const [actionLoading, setActionLoading] = useState(false);
   const [stats, setStats] = useState({
     expiringSoon: [] as any[],
     birthdays: [] as any[],
@@ -55,6 +61,42 @@ export const StaffDashboard: React.FC = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    if (!user) return;
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const unsub = db.collection('staff_attendance')
+      .where('user_id', '==', user.uid)
+      .where('date', '==', today)
+      .onSnapshot((snap) => {
+        setTodayRecord(snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() });
+      });
+    return () => unsub();
+  }, [user]);
+
+  const handleCheckIn = async () => {
+    if (!user) return;
+    setActionLoading(true);
+    try {
+      await db.collection('staff_attendance').add({
+        user_id: user.uid, name: userProfile?.name || 'Staff', role: 'staff',
+        date: format(new Date(), 'yyyy-MM-dd'), login_time: new Date().toLocaleTimeString(),
+        timestamp: new Date().toISOString()
+      });
+    } catch (err) { console.error(err); }
+    setActionLoading(false);
+  };
+
+  const handleCheckOut = async () => {
+    if (!user || !todayRecord?.id) return;
+    setActionLoading(true);
+    try {
+      await db.collection('staff_attendance').doc(todayRecord.id).update({
+        logout_time: new Date().toLocaleTimeString()
+      });
+    } catch (err) { console.error(err); }
+    setActionLoading(false);
+  };
+
   const sendBirthdayWish = (member: any) => {
     openWhatsApp(member.phone, whatsAppTemplates.birthday(member.name));
   };
@@ -70,11 +112,25 @@ export const StaffDashboard: React.FC = () => {
           <h1 className="text-2xl font-bold text-gray-900">Staff Dashboard</h1>
           <p className="text-gray-500">Daily gym operations</p>
         </div>
-        <div className="flex gap-3">
-          <button className="flex items-center gap-2 bg-red-600 text-white px-4 py-2 rounded-xl font-bold hover:bg-red-700 transition-colors w-full md:w-auto justify-center">
-            <UserPlus className="w-5 h-5" />
-            Add Member
-          </button>
+        <div className="flex items-center gap-3">
+          {!todayRecord ? (
+            <button onClick={handleCheckIn} disabled={actionLoading}
+              className="flex items-center gap-2 bg-gray-900 text-white px-4 md:px-6 py-3 rounded-[1.5rem] font-black text-sm hover:bg-black transition-all shadow-xl shadow-gray-200 active:scale-95 disabled:opacity-50">
+              <ClockCircle className="w-4 h-5 text-red-400" />
+              {actionLoading ? '...' : 'Check In'}
+            </button>
+          ) : !todayRecord.logout_time ? (
+            <button onClick={handleCheckOut} disabled={actionLoading}
+              className="flex items-center gap-2 bg-red-600 text-white px-4 md:px-6 py-3 rounded-[1.5rem] font-black text-sm hover:bg-red-700 transition-all shadow-xl shadow-red-500/20 active:scale-95 disabled:opacity-50">
+              <Logout className="w-4 h-5" />
+              {actionLoading ? '...' : 'Check Out'}
+            </button>
+          ) : (
+            <div className="flex items-center gap-2 px-4 md:px-6 py-3 bg-pastel-emerald text-red-600 rounded-[1.5rem] border border-red-100 font-black text-sm">
+              <CheckCircle className="w-4 h-5" />
+              Done
+            </div>
+          )}
         </div>
       </div>
 

@@ -9,17 +9,25 @@ import {
   CheckCircle,
   CloseCircle,
   FileText,
-  Phone
+  Phone,
+  GraphUp,
+  Logout
 } from '@solar-icons/react';
+import { ImageViewer } from '../../components/ImageViewer';
 
 export const MemberDashboard: React.FC = () => {
-  const { user } = useAuth();
+  const { user, userProfile } = useAuth();
   const [memberData, setMemberData] = useState<any>(null);
   const [memberId, setMemberId] = useState<string | null>(null);
   const [workoutPlan, setWorkoutPlan] = useState<any>(null);
   const [dietPlan, setDietPlan] = useState<any>(null);
   const [trainer, setTrainer] = useState<any>(null);
   const [attendance, setAttendance] = useState<any[]>([]);
+  const [progress, setProgress] = useState<any[]>([]);
+  const [viewerSrc, setViewerSrc] = useState('');
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [todayRecord, setTodayRecord] = useState<any>(null);
+  const [actionLoading, setActionLoading] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -43,7 +51,15 @@ export const MemberDashboard: React.FC = () => {
         }
       });
 
-    return () => unsubMember();
+    const today = format(new Date(), 'yyyy-MM-dd');
+    const unsubToday = db.collection('staff_attendance')
+      .where('user_id', '==', user.uid)
+      .where('date', '==', today)
+      .onSnapshot((snap) => {
+        setTodayRecord(snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() });
+      });
+
+    return () => { unsubMember(); unsubToday(); };
   }, [user]);
 
   // Separate effect — needs memberId (Firestore doc id, NOT auth uid)
@@ -64,6 +80,14 @@ export const MemberDashboard: React.FC = () => {
         setDietPlan(snap.empty ? null : snap.docs[0].data());
       });
 
+    const unsubProgress = db.collection('progress')
+      .where('member_id', '==', memberId)
+      .onSnapshot((snap) => {
+        const data = snap.docs.map(d => d.data());
+        data.sort((a: any, b: any) => ((b.date || '') > (a.date || '') ? 1 : -1));
+        setProgress(data.slice(0, 5));
+      });
+
     const today = format(new Date(), 'yyyy-MM-dd');
     const unsubAttendance = db.collection('staff_attendance')
       .where('user_id', '==', user!.uid)
@@ -72,7 +96,7 @@ export const MemberDashboard: React.FC = () => {
         setAttendance(snap.docs.map(d => d.data()));
       });
 
-    return () => { unsubWorkout(); unsubDiet(); unsubAttendance(); };
+    return () => { unsubWorkout(); unsubDiet(); unsubProgress(); unsubAttendance(); };
   }, [memberId, user]);
 
   if (loading) return (
@@ -93,12 +117,60 @@ export const MemberDashboard: React.FC = () => {
 
   const isExpiringSoon = daysLeft > 0 && daysLeft <= 7;
 
+  const handleCheckIn = async () => {
+    if (!user) return;
+    setActionLoading(true);
+    try {
+      await db.collection('staff_attendance').add({
+        user_id: user.uid, name: userProfile?.name || 'Member', role: 'member',
+        date: format(new Date(), 'yyyy-MM-dd'), login_time: new Date().toLocaleTimeString(),
+        timestamp: new Date().toISOString()
+      });
+    } catch (err) { console.error(err); }
+    setActionLoading(false);
+  };
+
+  const handleCheckOut = async () => {
+    if (!user || !todayRecord?.id) return;
+    setActionLoading(true);
+    try {
+      await db.collection('staff_attendance').doc(todayRecord.id).update({
+        logout_time: new Date().toLocaleTimeString()
+      });
+    } catch (err) { console.error(err); }
+    setActionLoading(false);
+  };
+
   return (
     <div className="space-y-4 md:space-y-8 pb-10">
       {/* Header */}
       <div className="bg-gradient-to-br from-pastel-indigo to-pastel-blue rounded-[2rem] md:rounded-[3rem] p-5 md:p-10 border border-gray-100 shadow-premium">
-        <h1 className="text-xl md:text-4xl font-extrabold text-gray-900 tracking-tight">Welcome, {memberData.name}</h1>
-        <p className="text-gray-500 mt-1 md:mt-2 text-sm md:text-lg font-medium">Your fitness journey at a glance</p>
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-xl md:text-4xl font-extrabold text-gray-900 tracking-tight">Welcome, {memberData.name}</h1>
+            <p className="text-gray-500 mt-1 md:mt-2 text-sm md:text-lg font-medium">Your fitness journey at a glance</p>
+          </div>
+          <div className="flex items-center gap-3 shrink-0">
+            {!todayRecord ? (
+              <button onClick={handleCheckIn} disabled={actionLoading}
+                className="flex items-center gap-2 bg-gray-900 text-white px-5 md:px-7 py-3 md:py-4 rounded-[1.5rem] font-black text-sm hover:bg-black transition-all shadow-xl shadow-gray-200 active:scale-95 disabled:opacity-50">
+                <ClockCircle className="w-5 h-5 text-red-400" />
+                {actionLoading ? '...' : 'Check In'}
+              </button>
+            ) : !todayRecord.logout_time ? (
+              <button onClick={handleCheckOut} disabled={actionLoading}
+                className="flex items-center gap-2 bg-red-600 text-white px-5 md:px-7 py-3 md:py-4 rounded-[1.5rem] font-black text-sm hover:bg-red-700 transition-all shadow-xl shadow-red-500/20 active:scale-95 disabled:opacity-50">
+                <Logout className="w-5 h-5" />
+                {actionLoading ? '...' : 'Check Out'}
+              </button>
+            ) : (
+              <div className="flex items-center gap-2 px-5 md:px-7 py-3 md:py-4 bg-white/80 text-red-600 rounded-[1.5rem] border border-red-100 font-black text-sm backdrop-blur-sm">
+                <CheckCircle className="w-5 h-5" />
+                Done
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Membership Status */}
@@ -195,7 +267,7 @@ export const MemberDashboard: React.FC = () => {
                 src={workoutPlan.image_url}
                 alt="Workout"
                 className="w-full max-h-64 object-contain rounded-2xl border border-gray-200 bg-gray-50 cursor-pointer"
-                onClick={() => window.open(workoutPlan.image_url, '_blank')}
+                onClick={() => { setViewerSrc(workoutPlan.image_url); setViewerOpen(true); }}
               />
             )}
           </div>
@@ -215,9 +287,16 @@ export const MemberDashboard: React.FC = () => {
           </div>
           <h3 className="text-lg md:text-xl font-black text-gray-900 tracking-tight">Diet Plan</h3>
         </div>
-        {dietPlan?.description ? (
-          <div className="p-3 md:p-5 bg-gray-50/50 rounded-2xl">
-            <p className="text-sm font-bold text-gray-600 leading-relaxed whitespace-pre-wrap">{dietPlan.description}</p>
+        {dietPlan?.description || dietPlan?.image_url ? (
+          <div className="space-y-3 md:space-y-4">
+            {dietPlan.description && (
+              <div className="p-3 md:p-5 bg-gray-50/50 rounded-2xl">
+                <p className="text-sm font-bold text-gray-600 leading-relaxed whitespace-pre-wrap">{dietPlan.description}</p>
+              </div>
+            )}
+            {dietPlan.image_url && (
+              <img src={dietPlan.image_url} alt="Diet" className="w-full max-h-64 object-contain rounded-2xl border border-gray-200 bg-gray-50 cursor-pointer" onClick={() => { setViewerSrc(dietPlan.image_url); setViewerOpen(true); }} />
+            )}
           </div>
         ) : (
           <div className="text-center py-8 md:py-12 bg-gray-50/50 rounded-[2rem] border border-dashed border-gray-200">
@@ -226,6 +305,40 @@ export const MemberDashboard: React.FC = () => {
           </div>
         )}
       </div>
+
+      {/* Latest Progress */}
+      <div className="bg-white p-4 md:p-8 rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 shadow-premium">
+        <div className="flex items-center gap-3 mb-4 md:mb-6">
+          <div className="p-2 md:p-3 bg-pastel-blue rounded-2xl border border-red-100">
+            <GraphUp className="w-5 md:w-6 h-5 md:h-6 text-red-600" />
+          </div>
+          <h3 className="text-lg md:text-xl font-black text-gray-900 tracking-tight">Latest Progress</h3>
+        </div>
+        {progress.length > 0 ? (
+          <div className="space-y-3 md:space-y-4">
+            {progress.map((log: any, i: number) => (
+              <div key={i} className="p-3 md:p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
+                <div className="flex justify-between items-start gap-2 mb-2">
+                  <p className="text-xs font-black text-gray-400 uppercase">{log.date}</p>
+                  {log.weight && <p className="text-sm md:text-base font-black text-red-600">{log.weight} KG</p>}
+                </div>
+                <div className="flex flex-wrap gap-x-4 gap-y-1">
+                  {log.height && <p className="text-xs font-bold text-gray-500">Height: {log.height} CM</p>}
+                  {log.body_fat && <p className="text-xs font-bold text-gray-500">Body Fat: {log.body_fat}%</p>}
+                </div>
+                {log.notes && <p className="text-xs font-bold text-gray-400 mt-1 line-clamp-2">{log.notes}</p>}
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 md:py-12 bg-gray-50/50 rounded-[2rem] border border-dashed border-gray-200">
+            <GraphUp className="w-8 h-8 text-gray-200 mx-auto mb-3" />
+            <p className="text-gray-400 font-black text-sm uppercase tracking-widest">No progress logged yet</p>
+          </div>
+        )}
+      </div>
+      {/* Image Viewer */}
+      <ImageViewer src={viewerSrc} open={viewerOpen} onClose={() => setViewerOpen(false)} />
     </div>
   );
 };

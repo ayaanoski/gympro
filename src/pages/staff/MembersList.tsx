@@ -37,6 +37,7 @@ export const MembersList: React.FC = () => {
     category: 'normal',
     discount_percent: 0,
     trainer_id: '',
+    trainer_fee: 0,
     initial_payment: 0,
     payment_method: 'Cash',
     dob: '',
@@ -105,7 +106,7 @@ export const MembersList: React.FC = () => {
       }
 
       // 2. Create member document
-      await staffService.addMember({
+      const memberRef = await staffService.addMember({
         ...formData,
         auth_uid: authUid,
         trainer_name: selectedTrainer?.name || 'Not Assigned',
@@ -113,12 +114,31 @@ export const MembersList: React.FC = () => {
         start_date: new Date().toISOString().split('T')[0]
       });
 
-      // 3. All DB ops succeeded — close modal, reset form
-      setIsModalOpen(false);
-      setFormData({ name: '', phone: '', email: '', membership_plan: '', category: 'normal', discount_percent: 0, trainer_id: '', initial_payment: 0, payment_method: 'Cash', dob: '', reg_password: '' });
+      // 3. Create initial trainer earnings record if trainer fee was set
+      if (formData.trainer_fee > 0 && formData.trainer_id) {
+        await db.collection('trainer_earnings').add({
+          trainer_id: formData.trainer_id,
+          member_id: memberRef.id,
+          member_name: formData.name,
+          amount: formData.trainer_fee,
+          date: new Date().toISOString().split('T')[0],
+          created_at: new Date().toISOString()
+        });
+      }
 
-      // 4. Navigate to WhatsApp (reliable after async — not window.open which gets blocked)
-      window.location.href = waLink;
+      // 4. All DB ops succeeded — close modal, reset form
+      setIsModalOpen(false);
+      setFormData({ name: '', phone: '', email: '', membership_plan: '', category: 'normal', discount_percent: 0, trainer_id: '', trainer_fee: 0, initial_payment: 0, payment_method: 'Cash', dob: '', reg_password: '' });
+
+      // 4. Open WhatsApp in a new tab (anchor click bypasses popup blockers)
+      const waAnchor = document.createElement('a');
+      waAnchor.href = waLink;
+      waAnchor.target = '_blank';
+      waAnchor.rel = 'noopener noreferrer';
+      waAnchor.style.display = 'none';
+      document.body.appendChild(waAnchor);
+      waAnchor.click();
+      document.body.removeChild(waAnchor);
     } catch (err: any) {
       alert(err.message || 'Failed to register member');
       console.error(err);
@@ -310,20 +330,20 @@ export const MembersList: React.FC = () => {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 40 }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="relative w-full max-w-2xl bg-white rounded-[2rem] md:rounded-[3rem] shadow-2xl p-5 md:p-10 overflow-y-auto max-h-[90vh] border border-white/50"
+              className="relative w-full max-w-2xl bg-white rounded-[2rem] md:rounded-[3rem] shadow-2xl p-4 md:p-8 border border-white/50 overflow-y-auto max-h-[90vh] md:overflow-visible md:max-h-none"
             >
-              <div className="flex items-start md:items-center justify-between mb-6 md:mb-10 gap-4">
-                <div>
-                  <h2 className="text-xl md:text-3xl font-black text-gray-900 tracking-tight">Register New Member</h2>
-                  <p className="text-gray-400 font-bold mt-1 uppercase text-[10px] tracking-widest">Enrollment Details</p>
+              <div className="flex items-start justify-between mb-3 md:mb-6 gap-2">
+                <div className="min-w-0">
+                  <h2 className="text-base md:text-2xl font-black text-gray-900 tracking-tight truncate pr-2">Register New Member</h2>
+                  <p className="text-gray-400 font-bold mt-0.5 uppercase text-[10px] tracking-widest">Enrollment</p>
                 </div>
-                <button onClick={() => setIsModalOpen(false)} className="p-2 md:p-3 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-2xl transition-all shrink-0">
-                  <CloseCircle className="w-6 md:w-8 h-6 md:h-8" />
+                <button onClick={() => setIsModalOpen(false)} className="p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all shrink-0 -mt-0.5">
+                  <CloseCircle className="w-5 md:w-7 h-5 md:h-7" />
                 </button>
               </div>
 
-              <form onSubmit={handleAddMember} className="space-y-6 md:space-y-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
+              <form onSubmit={handleAddMember} className="space-y-3 md:space-y-5">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-5">
                   <div className="space-y-2">
                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
                     <input
@@ -378,7 +398,8 @@ export const MembersList: React.FC = () => {
                         const plan = plans.find(p => p.plan_name === e.target.value);
                         const price = plan ? plan.price : 0;
                         const discount = formData.discount_percent || 0;
-                        const finalAmount = price - Math.round(price * discount / 100);
+                        const fee = formData.trainer_fee || 0;
+                        const finalAmount = price - Math.round(price * discount / 100) + fee;
                         setFormData({ ...formData, membership_plan: e.target.value, initial_payment: finalAmount });
                       }}
                       className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-[right_1.25rem_center] bg-no-repeat"
@@ -408,7 +429,8 @@ export const MembersList: React.FC = () => {
                         const d = Math.max(0, Math.min(100, parseInt(e.target.value) || 0));
                         const plan = plans.find(p => p.plan_name === formData.membership_plan);
                         const price = plan ? plan.price : 0;
-                        const finalAmount = price - Math.round(price * d / 100);
+                        const fee = formData.trainer_fee || 0;
+                        const finalAmount = price - Math.round(price * d / 100) + fee;
                         setFormData({ ...formData, discount_percent: d, initial_payment: finalAmount });
                       }}
                       className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700"
@@ -419,7 +441,7 @@ export const MembersList: React.FC = () => {
                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Personal Trainer</label>
                     <select
                       value={formData.trainer_id}
-                      onChange={e => setFormData({ ...formData, trainer_id: e.target.value })}
+                      onChange={e => setFormData({ ...formData, trainer_id: e.target.value, trainer_fee: e.target.value ? formData.trainer_fee : 0 })}
                       className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-[right_1.25rem_center] bg-no-repeat"
                     >
                       <option value="">No Trainer</option>
@@ -428,13 +450,30 @@ export const MembersList: React.FC = () => {
                       ))}
                     </select>
                   </div>
+                  {formData.trainer_id && (
                   <div className="space-y-2">
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Total Fee (₹)</label>
-                    <input
-                      type="number" required readOnly
-                      value={formData.initial_payment}
-                      className="w-full px-6 py-4 bg-gray-100 border border-transparent rounded-2xl cursor-not-allowed font-bold text-gray-500 outline-none"
-                    />
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Trainer Fee (for this period)</label>
+                    <input type="number" min="0" value={formData.trainer_fee} onChange={e => {
+                        const fee = parseInt(e.target.value) || 0;
+                        const plan = plans.find(p => p.plan_name === formData.membership_plan);
+                        const price = plan ? plan.price : 0;
+                        const discount = formData.discount_percent || 0;
+                        const finalAmount = price - Math.round(price * discount / 100) + fee;
+                        setFormData({ ...formData, trainer_fee: fee, initial_payment: finalAmount });
+                      }}
+                      className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700"
+                      placeholder="Enter trainer fee amount" />
+                  </div>
+                  )}
+                  <div className="space-y-2">
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Total Amount (₹)</label>
+                    <input type="number" required readOnly value={formData.initial_payment}
+                      className="w-full px-6 py-4 bg-gray-100 border border-transparent rounded-2xl cursor-not-allowed font-bold text-gray-500 outline-none" />
+                    {formData.membership_plan && (
+                      <p className="text-[10px] text-gray-400 font-bold px-1">
+                        Plan {plans.find(p => p.plan_name === formData.membership_plan)?.price || 0}{formData.trainer_fee > 0 ? ` + Trainer ${formData.trainer_fee}` : ''}{formData.discount_percent > 0 ? ` - ${formData.discount_percent}% off` : ''}
+                      </p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Payment Method</label>

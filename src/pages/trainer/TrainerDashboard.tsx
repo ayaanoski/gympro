@@ -10,17 +10,25 @@ import {
   AltArrowRight,
   ClockCircle,
   Magnifer,
-  AltArrowLeft
+  AltArrowLeft,
+  Dumbbell,
+  FileText,
+  Logout
 } from '@solar-icons/react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
+import { ImageViewer } from '../../components/ImageViewer';
 
 export const TrainerDashboard: React.FC = () => {
   const { user, userProfile } = useAuth();
   const navigate = useNavigate();
   const [members, setMembers] = useState<any[]>([]);
   const [progressUpdates, setProgressUpdates] = useState<any[]>([]);
-  const [isCheckedIn, setIsCheckedIn] = useState(false);
+  const [workoutPlans, setWorkoutPlans] = useState<Record<string, any>>({});
+  const [dietPlans, setDietPlans] = useState<Record<string, any>>({});
+  const [viewerSrc, setViewerSrc] = useState('');
+  const [viewerOpen, setViewerOpen] = useState(false);
+  const [todayRecord, setTodayRecord] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -50,7 +58,7 @@ export const TrainerDashboard: React.FC = () => {
       .where('user_id', '==', user.uid)
       .where('date', '==', today)
       .onSnapshot((snap) => {
-        setIsCheckedIn(!snap.empty);
+        setTodayRecord(snap.empty ? null : { id: snap.docs[0].id, ...snap.docs[0].data() });
       });
 
     return () => {
@@ -58,6 +66,39 @@ export const TrainerDashboard: React.FC = () => {
       unsubAttendance();
     };
   }, [user]);
+
+  // Separate effect for progress, workout & diet plans — uses members list
+  useEffect(() => {
+    if (members.length === 0) return;
+    const memberIds = members.map((m: any) => m.id);
+    const ids = memberIds.slice(0, 10);
+
+    const unsubProgress = db.collection('progress')
+      .where('member_id', 'in', ids)
+      .onSnapshot((snap) => {
+        const logs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        logs.sort((a: any, b: any) => (b.date || '') > (a.date || '') ? 1 : -1);
+        setProgressUpdates(logs.slice(0, 10));
+      });
+
+    const unsubWorkouts = db.collection('workout_plans')
+      .where('member_id', 'in', ids)
+      .onSnapshot((snap) => {
+        const plans: Record<string, any> = {};
+        snap.docs.forEach(d => { const data = d.data(); plans[data.member_id] = data; });
+        setWorkoutPlans(plans);
+      });
+
+    const unsubDiets = db.collection('diet_plans')
+      .where('member_id', 'in', ids)
+      .onSnapshot((snap) => {
+        const plans: Record<string, any> = {};
+        snap.docs.forEach(d => { const data = d.data(); plans[data.member_id] = data; });
+        setDietPlans(plans);
+      });
+
+    return () => { unsubProgress(); unsubWorkouts(); unsubDiets(); };
+  }, [members]);
 
   useEffect(() => {
     if (members.length === 0) return;
@@ -87,6 +128,17 @@ export const TrainerDashboard: React.FC = () => {
     }
   };
 
+  const handleCheckOut = async () => {
+    if (!user || !todayRecord?.id) return;
+    setActionLoading(true);
+    try {
+      await db.collection('staff_attendance').doc(todayRecord.id).update({
+        logout_time: new Date().toLocaleTimeString()
+      });
+    } catch (err) { console.error(err); }
+    setActionLoading(false);
+  };
+
   if (loading) return (
     <div className="flex items-center justify-center min-h-[400px]">
       <div className="w-12 h-12 border-4 border-brand-primary border-t-transparent rounded-full animate-spin" />
@@ -100,20 +152,23 @@ export const TrainerDashboard: React.FC = () => {
           <h1 className="text-2xl md:text-4xl font-extrabold text-gray-900 tracking-tight">My Athletes</h1>
           <p className="text-gray-500 mt-2 text-sm md:text-lg font-medium">{members.length} assigned members</p>
         </div>
-        <div className="flex items-center gap-4">
-          {!isCheckedIn ? (
-            <button
-              onClick={handleCheckIn}
-              disabled={actionLoading}
-              className="px-6 md:px-8 py-4 bg-gray-900 text-white rounded-[1.5rem] font-black text-sm hover:bg-black transition-all shadow-xl shadow-gray-200 flex items-center gap-3 active:scale-95 disabled:opacity-50 w-full md:w-auto justify-center"
-            >
+        <div className="flex items-center gap-3">
+          {!todayRecord ? (
+            <button onClick={handleCheckIn} disabled={actionLoading}
+              className="flex items-center gap-2 bg-gray-900 text-white px-5 md:px-7 py-3 md:py-4 rounded-[1.5rem] font-black text-sm hover:bg-black transition-all shadow-xl shadow-gray-200 active:scale-95 disabled:opacity-50">
               <ClockCircle className="w-5 h-5 text-red-400" />
-              {actionLoading ? 'Checking in...' : 'Check In'}
+              {actionLoading ? '...' : 'Check In'}
+            </button>
+          ) : !todayRecord.logout_time ? (
+            <button onClick={handleCheckOut} disabled={actionLoading}
+              className="flex items-center gap-2 bg-red-600 text-white px-5 md:px-7 py-3 md:py-4 rounded-[1.5rem] font-black text-sm hover:bg-red-700 transition-all shadow-xl shadow-red-500/20 active:scale-95 disabled:opacity-50">
+              <Logout className="w-5 h-5" />
+              {actionLoading ? '...' : 'Check Out'}
             </button>
           ) : (
-            <div className="px-6 md:px-8 py-4 bg-pastel-emerald text-red-600 rounded-[1.5rem] border border-red-100 font-black text-sm flex items-center gap-3 w-full md:w-auto justify-center">
-              <CheckCircle className="w-5 h-5 shrink-0" />
-              <span className="text-xs md:text-sm">Checked In</span>
+            <div className="flex items-center gap-2 px-5 md:px-7 py-3 md:py-4 bg-pastel-emerald text-red-600 rounded-[1.5rem] border border-red-100 font-black text-sm">
+              <CheckCircle className="w-5 h-5" />
+              Done
             </div>
           )}
         </div>
@@ -143,6 +198,102 @@ export const TrainerDashboard: React.FC = () => {
           <p className="text-3xl md:text-4xl font-black text-gray-900 mt-2">{progressUpdates.length}</p>
         </div>
       </div>
+
+      {/* Recent Progress */}
+      {progressUpdates.length > 0 && (
+        <div className="bg-white p-5 md:p-8 rounded-[2rem] md:rounded-[3rem] border border-gray-100 shadow-premium">
+          <h3 className="text-lg md:text-xl font-black text-gray-900 tracking-tight mb-4 md:mb-6">Recent Progress</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {progressUpdates.slice(0, 6).map((log: any) => {
+              const member = members.find((m: any) => m.id === log.member_id);
+              return (
+                <div key={log.id} className="p-4 bg-gray-50/50 rounded-2xl border border-gray-100">
+                  <div className="flex justify-between items-start gap-2 mb-2">
+                    <p className="text-sm font-black text-gray-900 truncate">{member?.name || 'Unknown'}</p>
+                    <p className="text-[10px] font-black text-gray-400 whitespace-nowrap">{log.date}</p>
+                  </div>
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 mt-2">
+                    {log.weight && <p className="text-xs font-bold text-gray-600">Weight: {log.weight} KG</p>}
+                    {log.height && <p className="text-xs font-bold text-gray-600">Height: {log.height} CM</p>}
+                    {log.body_fat && <p className="text-xs font-bold text-gray-600">Body Fat: {log.body_fat}%</p>}
+                  </div>
+                  {log.notes && <p className="text-xs font-bold text-gray-400 mt-2 line-clamp-1">{log.notes}</p>}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Workout & Diet Plans Overview */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+        <div className="bg-white p-4 md:p-6 rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 shadow-premium">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-pastel-purple rounded-2xl border border-red-100">
+              <Dumbbell className="w-5 h-5 text-red-600" />
+            </div>
+            <h3 className="text-lg font-black text-gray-900 tracking-tight">Workout Plans</h3>
+          </div>
+          {members.length > 0 ? (
+            <div className="space-y-3">
+              {members.slice(0, 5).map((m: any) => {
+                const wp = workoutPlans[m.id];
+                return (
+                  <div key={m.id} className="flex items-center justify-between p-3 bg-gray-50/50 rounded-xl gap-2">
+                    <p className="text-sm font-bold text-gray-900 truncate min-w-0">{m.name}</p>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {wp?.image_url ? (
+                        <img src={wp.image_url} alt="" className="w-8 h-8 rounded-lg object-cover border border-gray-200 cursor-pointer" onClick={() => { setViewerSrc(wp.image_url); setViewerOpen(true); }} />
+                      ) : wp?.description ? (
+                        <span className="text-[10px] font-black text-red-600 bg-pastel-emerald px-2 py-1 rounded-full">Set</span>
+                      ) : (
+                        <span className="text-[10px] font-black text-gray-400 bg-gray-100 px-2 py-1 rounded-full">—</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-center py-6 text-gray-400 font-black text-[10px] uppercase tracking-widest">No athletes assigned</p>
+          )}
+        </div>
+
+        <div className="bg-white p-4 md:p-6 rounded-[2rem] md:rounded-[2.5rem] border border-gray-100 shadow-premium">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-pastel-emerald rounded-2xl border border-red-100">
+              <FileText className="w-5 h-5 text-red-600" />
+            </div>
+            <h3 className="text-lg font-black text-gray-900 tracking-tight">Diet Plans</h3>
+          </div>
+          {members.length > 0 ? (
+            <div className="space-y-3">
+              {members.slice(0, 5).map((m: any) => {
+                const dp = dietPlans[m.id];
+                return (
+                  <div key={m.id} className="flex items-center justify-between p-3 bg-gray-50/50 rounded-xl gap-2">
+                    <p className="text-sm font-bold text-gray-900 truncate min-w-0">{m.name}</p>
+                    <div className="flex items-center gap-2 shrink-0">
+                      {dp?.image_url ? (
+                        <img src={dp.image_url} alt="" className="w-8 h-8 rounded-lg object-cover border border-gray-200 cursor-pointer" onClick={() => { setViewerSrc(dp.image_url); setViewerOpen(true); }} />
+                      ) : dp?.description ? (
+                        <span className="text-[10px] font-black text-red-600 bg-pastel-emerald px-2 py-1 rounded-full">Set</span>
+                      ) : (
+                        <span className="text-[10px] font-black text-gray-400 bg-gray-100 px-2 py-1 rounded-full">—</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-center py-6 text-gray-400 font-black text-[10px] uppercase tracking-widest">No athletes assigned</p>
+          )}
+        </div>
+      </div>
+
+      {/* Image Viewer */}
+      <ImageViewer src={viewerSrc} open={viewerOpen} onClose={() => setViewerOpen(false)} />
 
       {/* Athletes List */}
       <div className="bg-white rounded-[3rem] border border-gray-100 shadow-premium overflow-hidden">

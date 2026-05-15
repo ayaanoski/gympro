@@ -118,7 +118,7 @@ export const Settings: React.FC = () => {
 
       <div className="space-y-12">
         {/* Pending Approvals */}
-        {users.filter(u => !u.active && u.role !== 'admin').length > 0 && (
+        {users.filter(u => !u.active && u.role !== 'admin' && u.role !== 'member').length > 0 && (
           <section className="space-y-6">
             <div className="flex items-center gap-3 ml-2">
               <div className="w-3 h-3 bg-amber-400 rounded-full animate-pulse shadow-sm shadow-amber-200" />
@@ -135,7 +135,7 @@ export const Settings: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-orange-100/30">
-                  {users.filter(u => !u.active && u.role !== 'admin').map((user) => (
+                  {users.filter(u => !u.active && u.role !== 'admin' && u.role !== 'member').map((user) => (
                     <tr key={user.id} className="group hover:bg-white/50 transition-colors">
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-4">
@@ -195,7 +195,7 @@ export const Settings: React.FC = () => {
           <div className="flex items-center justify-between ml-2">
             <h2 className="text-xl font-black text-gray-900 tracking-tight">All Employees</h2>
             <span className="px-4 py-1.5 bg-gray-100 rounded-full text-[10px] font-black text-gray-400 uppercase tracking-widest">
-              {users.length} Total
+              {users.filter((u: any) => u.role !== 'member').length} Total
             </span>
           </div>
           <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-premium overflow-hidden">
@@ -210,7 +210,7 @@ export const Settings: React.FC = () => {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-50/50">
-                  {users.filter(u => u.active || u.role === 'admin').map((user) => (
+                  {users.filter(u => u.role !== 'member' && (u.active || u.role === 'admin')).map((user) => (
                     <tr key={user.id} className="group hover:bg-gray-50/30 transition-colors">
                       <td className="px-8 py-6">
                         <div className="flex items-center gap-4">
