@@ -67,37 +67,32 @@ export const TrainerDashboard: React.FC = () => {
     };
   }, [user]);
 
-  // Separate effect for progress, workout & diet plans — uses members list
+  // One-time fetches for progress, workout & diet plans — no live listener needed
   useEffect(() => {
     if (members.length === 0) return;
-    const memberIds = members.map((m: any) => m.id);
-    const ids = memberIds.slice(0, 10);
+    const ids = members.map((m: any) => m.id).slice(0, 10);
 
-    const unsubProgress = db.collection('progress')
-      .where('member_id', 'in', ids)
-      .onSnapshot((snap) => {
-        const logs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        logs.sort((a: any, b: any) => (b.date || '') > (a.date || '') ? 1 : -1);
-        setProgressUpdates(logs.slice(0, 10));
-      });
+    const fetchData = async () => {
+      const [progSnap, workSnap, dietSnap] = await Promise.all([
+        db.collection('progress').where('member_id', 'in', ids).get(),
+        db.collection('workout_plans').where('member_id', 'in', ids).get(),
+        db.collection('diet_plans').where('member_id', 'in', ids).get()
+      ]);
 
-    const unsubWorkouts = db.collection('workout_plans')
-      .where('member_id', 'in', ids)
-      .onSnapshot((snap) => {
-        const plans: Record<string, any> = {};
-        snap.docs.forEach(d => { const data = d.data(); plans[data.member_id] = data; });
-        setWorkoutPlans(plans);
-      });
+      const logs = progSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      logs.sort((a: any, b: any) => (b.date || '') > (a.date || '') ? 1 : -1);
+      setProgressUpdates(logs.slice(0, 10));
 
-    const unsubDiets = db.collection('diet_plans')
-      .where('member_id', 'in', ids)
-      .onSnapshot((snap) => {
-        const plans: Record<string, any> = {};
-        snap.docs.forEach(d => { const data = d.data(); plans[data.member_id] = data; });
-        setDietPlans(plans);
-      });
+      const wPlans: Record<string, any> = {};
+      workSnap.docs.forEach(d => { const data = d.data(); wPlans[data.member_id] = data; });
+      setWorkoutPlans(wPlans);
 
-    return () => { unsubProgress(); unsubWorkouts(); unsubDiets(); };
+      const dPlans: Record<string, any> = {};
+      dietSnap.docs.forEach(d => { const data = d.data(); dPlans[data.member_id] = data; });
+      setDietPlans(dPlans);
+    };
+
+    fetchData();
   }, [members]);
 
   useEffect(() => {

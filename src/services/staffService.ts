@@ -15,6 +15,14 @@ export const staffService = {
       });
   },
 
+  getPaymentsOnce: async () => {
+    const snap = await db.collection('payments')
+      .orderBy('date', 'desc')
+      .limit(100)
+      .get();
+    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  },
+
   addPayment: (paymentData: any) => {
     return db.collection('payments').add({
       ...paymentData,

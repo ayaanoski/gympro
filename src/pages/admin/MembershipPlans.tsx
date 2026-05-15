@@ -24,8 +24,7 @@ export const MembershipPlans: React.FC = () => {
   });
 
   useEffect(() => {
-    const unsubscribe = adminService.getPlans(setPlans);
-    return () => unsubscribe();
+    adminService.getPlansOnce().then(setPlans);
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {

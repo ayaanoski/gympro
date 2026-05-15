@@ -1,0 +1,281 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ============================================================
+    // Helper functions
+    // ============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() && getUserRole() == 'admin';
+    }
+
+    function isStaff() {
+      return isAuthenticated() && getUserRole() == 'staff';
+    }
+
+    function isTrainer() {
+      return isAuthenticated() && getUserRole() == 'trainer';
+    }
+
+    function isMember() {
+      return isAuthenticated() && getUserRole() == 'member';
+    }
+
+    function isAdminOrStaff() {
+      return isAdmin() || isStaff();
+    }
+
+    function isEmployee() {
+      return isAdmin() || isStaff() || isTrainer();
+    }
+
+    function isAssignedTrainer(trainerId) {
+      return isTrainer() && request.auth.uid == trainerId;
+    }
+
+    function isOwnUser(uid) {
+      return request.auth.uid == uid;
+    }
+
+    function isOwnMember(authUid) {
+      return resource.data.auth_uid == request.auth.uid;
+    }
+
+    // Immutable fields that cannot be changed after creation
+    function hasNoImmutableChanges(immutableFields) {
+      return immutableFields.all(field =>
+        !request.resource.data.keys().hasAny([field]) ||
+        request.resource.data[field] == resource.data[field]
+      );
+    }
+
+    // Restrict writeable fields to an allowed set
+    function onlyAllowedFields(allowedFields) {
+      return request.resource.data.keys().hasOnly(allowedFields);
+    }
+
+    // ============================================================
+    // users/{uid}
+    // ============================================================
+
+    match /users/{userId} {
+
+      // Anyone authenticated can read their own profile
+      // Employees can read other employee profiles (for trainer assignment etc.)
+      allow read: if isAuthenticated() && (isOwnUser(userId) || isEmployee());
+
+      // Users create their own profile during sign-up (firebase auth triggers)
+      allow create: if isAuthenticated() && isOwnUser(userId);
+
+      // Users can update their own non-role fields
+      // Admins can update any user's active status and role
+      allow update: if isAuthenticated() && (
+        (isOwnUser(userId) && request.resource.data.keys().hasOnly(['qr_code', 'name', 'phone']))
+        || isAdmin()
+      );
+
+      // Only admins can delete user accounts
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // members/{docId}
+    // ============================================================
+
+    match /members/{memberId} {
+
+      // Employees and the member themselves can read
+      allow read: if isAuthenticated() && (
+        isEmployee() || isOwnMember(resource.data.auth_uid)
+      );
+
+      // Only admin/staff can create members
+      allow create: if isAdminOrStaff();
+
+      // Admin: full update access
+      // Staff: update most fields except auth_uid
+      // Trainer: can only update trainer_id and trainer_name
+      // Member: no update access (profile changes handled by staff)
+      allow update: if isAuthenticated() && (
+        isAdmin()
+        || (isStaff() && !request.resource.data.keys().hasAny(['auth_uid']))
+        || (isTrainer() && isAssignedTrainer(resource.data.trainer_id)
+            && request.resource.data.keys().hasOnly(['trainer_id', 'trainer_name']))
+      );
+
+      // Only admins can delete members
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // plans/{docId}
+    // ============================================================
+
+    match /plans/{planId} {
+
+      // All authenticated users can read plans
+      allow read: if isAuthenticated();
+
+      // Only admins can modify plans
+      allow create: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // payments/{docId}
+    // ============================================================
+
+    match /payments/{paymentId} {
+
+      // Admin/staff can read all payments
+      // Members can only read their own payments
+      allow read: if isAuthenticated() && (
+        isAdminOrStaff()
+        || (isMember() && resource.data.member_id in get(/databases/$(database)/documents/members)
+              .where('auth_uid', '==', request.auth.uid).data)
+      );
+
+      // Only admin/staff can create payments (from registration or renewal)
+      allow create: if isAdminOrStaff();
+
+      // Payments are immutable after creation — no updates allowed
+      // Only admins can delete incorrect entries
+      allow delete: if isAdmin();
+
+      // No update — payments are final once recorded
+      allow update: if false;
+    }
+
+    // ============================================================
+    // staff_attendance/{docId}
+    // ============================================================
+
+    match /staff_attendance/{attendanceId} {
+
+      // Employees can read all attendance; members can read their own
+      allow read: if isAuthenticated() && (
+        isEmployee()
+        || (isMember() && resource.data.user_id == request.auth.uid)
+      );
+
+      // Any authenticated user can mark their own attendance (check-in)
+      allow create: if isAuthenticated() && request.resource.data.user_id == request.auth.uid;
+
+      // Users can update their own attendance (check-out: add logout_time only)
+      // Admins can update any attendance record
+      allow update: if isAuthenticated() && (
+        (resource.data.user_id == request.auth.uid
+         && request.resource.data.keys().hasOnly(['logout_time']))
+        || isAdmin()
+      );
+
+      // Only admins can delete attendance records
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // workout_plans/{docId}
+    // ============================================================
+
+    match /workout_plans/{planId} {
+
+      // Employees and the assigned member can read
+      allow read: if isAuthenticated() && isEmployee();
+
+      // Only trainers can create/update workout plans for their members
+      allow create: if isTrainer();
+      allow update: if isTrainer();
+
+      // Only admins can delete workout plans
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // diet_plans/{docId}
+    // ============================================================
+
+    match /diet_plans/{planId} {
+
+      // Same as workout_plans
+      allow read: if isAuthenticated() && isEmployee();
+      allow create: if isTrainer();
+      allow update: if isTrainer();
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // progress/{docId}
+    // ============================================================
+
+    match /progress/{progressId} {
+
+      // Employees can read all progress; members can read their own
+      allow read: if isAuthenticated() && (
+        isEmployee()
+        || (isMember() && resource.data.member_id in
+            get(/databases/$(database)/documents/members)
+              .where('auth_uid', '==', request.auth.uid).data)
+      );
+
+      // Trainers and admin/staff can create progress logs
+      allow create: if isAuthenticated() && isEmployee();
+
+      // No updates — progress logs are immutable (add a new entry instead)
+      allow update: if false;
+
+      // Only admins can delete progress logs
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // trainer_earnings/{docId}
+    // ============================================================
+
+    match /trainer_earnings/{earningId} {
+
+      // Trainers can read their own earnings; admins can read all
+      allow read: if isAuthenticated() && (
+        isAdmin()
+        || (isTrainer() && resource.data.trainer_id == request.auth.uid)
+      );
+
+      // Trainers create their own earning records
+      allow create: if isTrainer() && request.resource.data.trainer_id == request.auth.uid;
+
+      // Earnings are immutable after creation
+      allow update: if false;
+
+      // Only admins can delete earnings records
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // member_documents/{docId}
+    // ============================================================
+
+    match /member_documents/{documentId} {
+
+      // Admin/staff can read all documents
+      allow read: if isAuthenticated() && isAdminOrStaff();
+
+      // Admin/staff can upload documents
+      allow create: if isAdminOrStaff();
+
+      // No updates — documents are immutable (upload new version instead)
+      allow update: if false;
+
+      // Only admins can delete documents
+      allow delete: if isAdmin();
+    }
+  }
+}

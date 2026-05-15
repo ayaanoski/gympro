@@ -9,6 +9,11 @@ export const adminService = {
     });
   },
 
+  getPlansOnce: async () => {
+    const snap = await db.collection('plans').get();
+    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  },
+
   addPlan: (planData: any) => {
     return db.collection('plans').add(planData);
   },
@@ -27,6 +32,11 @@ export const adminService = {
     });
   },
 
+  getUsersOnce: async () => {
+    const snap = await db.collection('users').get();
+    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  },
+
   updateUserStatus: (userId: string, active: boolean) => {
     return db.collection('users').doc(userId).update({
       active,
@@ -37,8 +47,6 @@ export const adminService = {
   sendAnnouncement: async (message: string) => {
     const membersSnap = await db.collection('members').where('status', '==', 'active').get();
     const members = membersSnap.docs.map(doc => doc.data());
-    // In a real app, this would use a bulk WhatsApp API. 
-    // For now, we'll return the list of numbers to the UI to handle.
     return members.map(m => ({ name: m.name, phone: m.phone }));
   },
 
@@ -48,5 +56,13 @@ export const adminService = {
       .onSnapshot((snap) => {
         callback(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       });
+  },
+
+  getAttendanceLogsOnce: async () => {
+    const snap = await db.collection('staff_attendance')
+      .orderBy('timestamp', 'desc')
+      .limit(100)
+      .get();
+    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
 };

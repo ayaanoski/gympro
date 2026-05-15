@@ -46,15 +46,13 @@ export const MembersList: React.FC = () => {
 
   useEffect(() => {
     const unsubscribeMembers = staffService.getMembers(setMembers);
-    const unsubscribePlans = adminService.getPlans(setPlans);
-    const unsubscribeUsers = adminService.getUsers((users) => {
-      setTrainers(users.filter(u => u.role === 'trainer' && u.active));
+    adminService.getPlansOnce().then(setPlans);
+    adminService.getUsersOnce().then((users) => {
+      setTrainers(users.filter((u: any) => u.role === 'trainer' && u.active));
     });
 
     return () => {
       unsubscribeMembers();
-      unsubscribePlans();
-      unsubscribeUsers();
     };
   }, []);
 

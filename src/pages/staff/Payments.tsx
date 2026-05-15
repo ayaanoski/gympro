@@ -20,11 +20,10 @@ export const Payments: React.FC = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = staffService.getPayments((data) => {
+    staffService.getPaymentsOnce().then((data) => {
       setPayments(data);
       setLoading(false);
     });
-    return () => unsubscribe();
   }, []);
 
   const exportToExcel = () => {

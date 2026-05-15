@@ -86,8 +86,9 @@ export const MemberProfile: React.FC = () => {
 
     let unsubs: (() => void)[] = [];
 
-    const setup = async () => {
+    const fetchData = async () => {
       try {
+        // KEEP real-time — current member doc
         unsubs.push(
           db.collection('members').doc(id).onSnapshot((doc) => {
             if (doc.exists) {
@@ -101,70 +102,40 @@ export const MemberProfile: React.FC = () => {
           })
         );
 
-        unsubs.push(
-          db.collection('payments')
-            .where('member_id', '==', id)
-            .onSnapshot((snap) => {
-              const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-              data.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
-              setPayments(data);
-            })
-        );
+        // ONE-TIME fetches — historical data
+        const [paySnap, progSnap, workSnap, dietSnap, docSnap, plansData, usersData] = await Promise.all([
+          db.collection('payments').where('member_id', '==', id).get(),
+          db.collection('progress').where('member_id', '==', id).get(),
+          db.collection('workout_plans').where('member_id', '==', id).limit(1).get(),
+          db.collection('diet_plans').where('member_id', '==', id).limit(1).get(),
+          db.collection('member_documents').where('member_id', '==', id).get(),
+          adminService.getPlansOnce(),
+          isAdmin || isStaff ? adminService.getUsersOnce() : Promise.resolve([])
+        ]);
 
-        unsubs.push(
-          db.collection('progress')
-            .where('member_id', '==', id)
-            .onSnapshot((snap) => {
-              const data = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-              data.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
-              setProgress(data);
-            })
-        );
+        const paymentsData = paySnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        paymentsData.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        setPayments(paymentsData);
 
-        unsubs.push(
-          db.collection('workout_plans')
-            .where('member_id', '==', id)
-            .limit(1)
-            .onSnapshot((snap) => {
-              if (!snap.empty) {
-                const data = snap.docs[0].data();
-                setWorkoutPlan({ id: snap.docs[0].id, ...data });
-              } else {
-                setWorkoutPlan(null);
-              }
-            })
-        );
+        const progressData = progSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+        progressData.sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+        setProgress(progressData);
 
-        unsubs.push(
-          db.collection('diet_plans')
-            .where('member_id', '==', id)
-            .limit(1)
-            .onSnapshot((snap) => {
-              if (!snap.empty) {
-                const data = snap.docs[0].data();
-                setDietPlan({ id: snap.docs[0].id, ...data });
-              } else {
-                setDietPlan(null);
-              }
-            })
-        );
+        if (!workSnap.empty) {
+          const data = workSnap.docs[0].data();
+          setWorkoutPlan({ id: workSnap.docs[0].id, ...data });
+        }
 
-        unsubs.push(
-          db.collection('member_documents')
-            .where('member_id', '==', id)
-            .onSnapshot((snap) => {
-              setDocuments(snap.docs.map(d => ({ id: d.id, ...d.data() })));
-            })
-        );
+        if (!dietSnap.empty) {
+          const data = dietSnap.docs[0].data();
+          setDietPlan({ id: dietSnap.docs[0].id, ...data });
+        }
 
-        adminService.getPlans(setPlans);
+        setDocuments(docSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+        setPlans(plansData);
 
         if (isAdmin || isStaff) {
-          unsubs.push(
-            adminService.getUsers((users) => {
-              setTrainers(users.filter((u: any) => u.role === 'trainer' && u.active));
-            })
-          );
+          setTrainers(usersData.filter((u: any) => u.role === 'trainer' && u.active));
         }
       } catch (err) {
         console.error(err);
@@ -172,8 +143,7 @@ export const MemberProfile: React.FC = () => {
       }
     };
 
-    setup();
-
+    fetchData();
     return () => unsubs.forEach(u => u?.());
   }, [id, navigate, isAdmin, isStaff]);
 
