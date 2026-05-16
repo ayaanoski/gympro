@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { db } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
-import { trainerService } from '../../services/trainerService';
 import {
   UsersGroupTwoRounded,
   ClipboardList,
@@ -116,19 +115,6 @@ export const TrainerDashboard: React.FC = () => {
     return () => unsubProgress();
   }, [members]);
 
-  const handleCheckIn = async () => {
-    if (!user) return;
-    setActionLoading(true);
-    try {
-      await trainerService.markAttendance(user.uid, userProfile?.name || user.displayName || 'Trainer');
-    } catch (err) {
-      console.error(err);
-      alert('Failed to check in');
-    } finally {
-      setActionLoading(false);
-    }
-  };
-
   const handleCheckOut = async () => {
     if (!user || !todayRecord?.id) { setCheckoutError('No active check-in found'); return; }
     setActionLoading(true);
@@ -158,15 +144,11 @@ export const TrainerDashboard: React.FC = () => {
           <p className="text-gray-500 mt-2 text-sm md:text-lg font-medium">{members.length} assigned members</p>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={() => setScannerOpen(true)} className="flex items-center gap-2 px-4 md:px-5 py-3 md:py-4 bg-white/80 border border-gray-200 text-gray-700 rounded-[1.5rem] font-black text-sm hover:bg-gray-50 transition-all shadow-sm backdrop-blur-sm">
-            <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="1"/></svg>
-            <span className="hidden sm:inline">QR</span>
-          </button>
           {!todayRecord ? (
-            <button onClick={handleCheckIn} disabled={actionLoading}
-              className="flex items-center gap-2 bg-gray-900 text-white px-5 md:px-7 py-3 md:py-4 rounded-[1.5rem] font-black text-sm hover:bg-black transition-all shadow-xl shadow-gray-200 active:scale-95 disabled:opacity-50">
-              <ClockCircle className="w-5 h-5 text-red-400" />
-              {actionLoading ? '...' : 'Check In'}
+            <button onClick={() => setScannerOpen(true)}
+              className="flex items-center gap-2 bg-gray-900 text-white px-5 md:px-7 py-3 md:py-4 rounded-[1.5rem] font-black text-sm hover:bg-black transition-all shadow-xl shadow-gray-200 active:scale-95">
+              <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7V5a2 2 0 0 1 2-2h2"/><path d="M17 3h2a2 2 0 0 1 2 2v2"/><path d="M21 17v2a2 2 0 0 1-2 2h-2"/><path d="M7 21H5a2 2 0 0 1-2-2v-2"/><circle cx="12" cy="12" r="1"/></svg>
+              Scan QR
             </button>
           ) : !todayRecord.logout_time ? (
             <div className="flex flex-col items-end gap-1">

@@ -101,33 +101,38 @@ export const Kiosk: React.FC = () => {
       </div>
 
       {/* Notifications */}
-      <div className="fixed bottom-6 right-6 z-50 space-y-3 w-80 max-w-[calc(100vw-2rem)]">
+      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 z-50 flex flex-col items-center gap-3 w-[90vw] max-w-md pointer-events-none">
         <AnimatePresence>
           {notifications.map((n) => (
             <motion.div
               key={n.id}
-              initial={{ opacity: 0, x: 100, scale: 0.9 }}
-              animate={{ opacity: 1, x: 0, scale: 1 }}
-              exit={{ opacity: 0, x: 100, scale: 0.9 }}
-              className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl"
+              layout
+              initial={{ opacity: 0, y: 40, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.9, transition: { duration: 0.2 } }}
+              className="w-full bg-white/10 backdrop-blur-2xl border border-white/20 rounded-2xl p-4 shadow-2xl shadow-black/20 pointer-events-auto overflow-hidden"
             >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
+              {/* Accent glow bar */}
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-red-500/60 via-red-400/40 to-transparent" />
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center shrink-0 overflow-hidden ring-2 ring-white/10">
                   {n.photo ? (
                     <img src={n.photo} alt="" className="w-full h-full object-cover" />
                   ) : (
-                    <div className="w-full h-full bg-red-500/20 flex items-center justify-center">
-                      <User className="w-5 h-5 text-red-400" />
+                    <div className="w-full h-full bg-gradient-to-br from-red-500/30 to-red-400/10 flex items-center justify-center">
+                      <User className="w-6 h-6 text-red-400" />
                     </div>
                   )}
                 </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-black text-white truncate">{n.message}</p>
-                  <p className="text-xs font-bold text-red-400 flex items-center gap-1">
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-black text-white truncate leading-tight">{n.message}</p>
+                  <p className="text-xs font-bold text-red-400/80 flex items-center gap-1.5 mt-1">
                     <ClockCircle className="w-3 h-3" /> {n.time}
                   </p>
                 </div>
-                <CheckCircle className="w-5 h-5 text-red-400 shrink-0" />
+                <div className="w-8 h-8 bg-red-500/20 rounded-full flex items-center justify-center shrink-0">
+                  <CheckCircle className="w-4 h-4 text-red-400" />
+                </div>
               </div>
             </motion.div>
           ))}
