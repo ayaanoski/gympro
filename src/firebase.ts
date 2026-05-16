@@ -9,7 +9,12 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
-export const auth = firebase.auth();
-export const db = firebase.firestore();
-export const storage = firebase.storage();
+const auth = firebase.auth();
+const db = firebase.firestore();
+const storage = firebase.storage();
+
+// Persist auth across sessions — stays logged in until explicit logout
+auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL);
+
+export { auth, db, storage };
 export default firebase;

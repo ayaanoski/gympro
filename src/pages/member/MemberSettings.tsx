@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import { auth } from '../../firebase';
 import { useAuth } from '../../context/AuthContext';
-import { LockPassword } from '@solar-icons/react';
+import { LockPassword, Download } from '@solar-icons/react';
 import firebase from 'firebase/compat/app';
+import { PwaInstallGuide } from '../../components/PwaInstallGuide';
 
 export const MemberSettings: React.FC = () => {
   const { userProfile } = useAuth();
@@ -12,6 +13,7 @@ export const MemberSettings: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [showPwaGuide, setShowPwaGuide] = useState(false);
 
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -102,6 +104,17 @@ export const MemberSettings: React.FC = () => {
           </button>
         </form>
       </div>
+
+      {/* PWA Install */}
+      <button
+        onClick={() => setShowPwaGuide(true)}
+        className="w-full py-4 bg-gradient-to-r from-red-50 to-amber-50 border border-red-200/50 rounded-[1.5rem] font-black text-sm text-red-700 hover:from-red-100 hover:to-amber-100 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+      >
+        <Download className="w-5 h-5" />
+        Install App — Android / iPhone / Desktop
+      </button>
+
+      <PwaInstallGuide open={showPwaGuide} onClose={() => setShowPwaGuide(false)} />
     </div>
   );
 };

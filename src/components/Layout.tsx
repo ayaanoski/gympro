@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import {
@@ -23,8 +23,40 @@ interface LayoutProps {
 export const Layout: React.FC<LayoutProps> = ({ children }) => {
   const { userProfile, isAdmin, isStaff, isTrainer, isMember, logout } = useAuth();
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [swUpdate, setSwUpdate] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const goOnline = () => setIsOnline(true);
+    const goOffline = () => setIsOnline(false);
+    window.addEventListener('online', goOnline);
+    window.addEventListener('offline', goOffline);
+
+    // Check for SW update flag set in main.tsx
+    const check = setInterval(() => {
+      if ((window as any).__swUpdate) {
+        setSwUpdate(true);
+        (window as any).__swUpdate = false;
+      }
+    }, 5000);
+
+    return () => {
+      window.removeEventListener('online', goOnline);
+      window.removeEventListener('offline', goOffline);
+      clearInterval(check);
+    };
+  }, []);
+
+  const handleSwUpdate = () => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistration().then((reg) => {
+        reg?.waiting?.postMessage({ type: 'SKIP_WAITING' });
+        window.location.reload();
+      });
+    }
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -125,6 +157,20 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
           </aside>
 
           <main className="flex-1 md:ml-64 min-h-screen">
+            {/* Offline indicator */}
+            {!isOnline && (
+              <div className="sticky top-0 z-50 bg-amber-500 text-white text-center py-2 px-4 text-xs font-bold tracking-wider">
+                📡 You are offline — some features may be limited
+              </div>
+            )}
+            {swUpdate && (
+              <div className="sticky top-0 z-50 bg-red-600 text-white text-center py-2 px-4 text-xs font-bold tracking-wider flex items-center justify-center gap-3">
+                <span>🔄 New version available</span>
+                <button onClick={handleSwUpdate} className="bg-white text-red-600 px-3 py-1 rounded-lg hover:bg-gray-100 transition-all">
+                  Update
+                </button>
+              </div>
+            )}
             <div className="p-4 md:p-10 max-w-[1600px] mx-auto">
               {children}
             </div>
@@ -212,6 +258,19 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
 
           {/* Main Content */}
           <main className="flex-1 md:ml-64 min-h-screen">
+            {!isOnline && (
+              <div className="sticky top-0 z-50 bg-amber-500 text-white text-center py-2 px-4 text-xs font-bold tracking-wider">
+                📡 You are offline — some features may be limited
+              </div>
+            )}
+            {swUpdate && (
+              <div className="sticky top-0 z-50 bg-red-600 text-white text-center py-2 px-4 text-xs font-bold tracking-wider flex items-center justify-center gap-3">
+                <span>🔄 New version available</span>
+                <button onClick={handleSwUpdate} className="bg-white text-red-600 px-3 py-1 rounded-lg hover:bg-gray-100 transition-all">
+                  Update
+                </button>
+              </div>
+            )}
             <div className="p-4 md:p-10 max-w-[1600px] mx-auto">
               {children}
             </div>

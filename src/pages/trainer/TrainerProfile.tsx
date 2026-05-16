@@ -11,9 +11,11 @@ import {
   Logout,
   Upload,
   Eye,
-  QrCode
+  QrCode,
+  Download
 } from '@solar-icons/react';
 import { ImageViewer } from '../../components/ImageViewer';
+import { PwaInstallGuide } from '../../components/PwaInstallGuide';
 
 const CLOUD_NAME = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
 const API_KEY = import.meta.env.VITE_CLOUDINARY_API_KEY;
@@ -28,6 +30,7 @@ export const TrainerProfile: React.FC = () => {
   const [uploading, setUploading] = useState(false);
   const [viewerSrc, setViewerSrc] = useState('');
   const [viewerOpen, setViewerOpen] = useState(false);
+  const [showPwaGuide, setShowPwaGuide] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -281,6 +284,17 @@ export const TrainerProfile: React.FC = () => {
 
       {/* Image Viewer */}
       <ImageViewer src={viewerSrc} open={viewerOpen} onClose={() => setViewerOpen(false)} />
+
+      {/* PWA Install */}
+      <button
+        onClick={() => setShowPwaGuide(true)}
+        className="w-full py-4 bg-gradient-to-r from-red-50 to-amber-50 border border-red-200/50 rounded-[1.5rem] font-black text-sm text-red-700 hover:from-red-100 hover:to-amber-100 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+      >
+        <Download className="w-5 h-5" />
+        Install App — Android / iPhone / Desktop
+      </button>
+
+      <PwaInstallGuide open={showPwaGuide} onClose={() => setShowPwaGuide(false)} />
     </div>
   );
 };

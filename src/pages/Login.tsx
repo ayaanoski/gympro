@@ -3,8 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import firebase from 'firebase/compat/app';
 import { auth, db } from '../firebase';
 import { motion, AnimatePresence } from 'motion/react';
-import { Dumbbell, LockPassword, Letter, Danger, UserRounded, Phone } from '@solar-icons/react';
+import { Dumbbell, LockPassword, Letter, Danger, UserRounded, Phone, Download } from '@solar-icons/react';
 import { format } from 'date-fns';
+import { PwaInstallGuide } from '../components/PwaInstallGuide';
 
 export const Login: React.FC = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -17,6 +18,7 @@ export const Login: React.FC = () => {
   });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPwaGuide, setShowPwaGuide] = useState(false);
   const navigate = useNavigate();
 
   const handleAuth = async (e: React.FormEvent) => {
@@ -225,7 +227,20 @@ export const Login: React.FC = () => {
             </button>
           </p>
         </div>
+
+        {/* PWA Install */}
+        <div className="mt-3">
+          <button
+            onClick={() => setShowPwaGuide(true)}
+            className="w-full py-3 bg-gradient-to-r from-red-50 to-amber-50 border border-red-200/50 rounded-2xl font-bold text-sm text-red-700 hover:from-red-100 hover:to-amber-100 transition-all flex items-center justify-center gap-2 active:scale-[0.98]"
+          >
+            <Download className="w-5 h-5" />
+            Install App — Android / iPhone / Desktop
+          </button>
+        </div>
       </motion.div>
+
+      <PwaInstallGuide open={showPwaGuide} onClose={() => setShowPwaGuide(false)} />
     </div>
   );
 };
