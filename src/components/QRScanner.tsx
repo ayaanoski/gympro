@@ -130,10 +130,21 @@ export const QRScanner: React.FC<QRScannerProps> = ({ open, onClose, role }) => 
         if (!user) { setStatus('error'); setMessage('Not authenticated'); return; }
 
         const personName = userProfile?.name || user?.displayName || 'Unknown';
+        const personPhoto = user.photoURL || '';
+        // If member and no auth photo, look up from members collection
+        let photoUrl = personPhoto;
+        if (!photoUrl && role === 'member') {
+          try {
+            const memberSnap = await db.collection('members').where('auth_uid', '==', user.uid).limit(1).get();
+            if (!memberSnap.empty) {
+              photoUrl = memberSnap.docs[0].data().photo || '';
+            }
+          } catch { /* ignore */ }
+        }
         await db.collection('staff_attendance').add({
           user_id: user.uid, name: personName, role,
           date: format(new Date(), 'yyyy-MM-dd'), login_time: new Date().toLocaleTimeString(),
-          timestamp: new Date().toISOString(), source: 'qr'
+          timestamp: new Date().toISOString(), source: 'qr', photo: photoUrl || ''
         });
         setStatus('success');
         if (role === 'member') {

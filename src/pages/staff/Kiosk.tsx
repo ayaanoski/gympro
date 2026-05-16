@@ -19,7 +19,7 @@ export const Kiosk: React.FC = () => {
   const [timestamp, setTimestamp] = useState(Math.floor(Date.now() / 1000));
   const [notifications, setNotifications] = useState<any[]>([]);
   const [checkIns, setCheckIns] = useState<any[]>([]);
-  const prevCountRef = useRef(0);
+  const prevCountRef = useRef(-1); // -1 = not initialized yet
 
   const token = generateToken(timestamp);
   const payload = JSON.stringify({ gymId: GYM_ID, timestamp, token });
@@ -34,23 +34,35 @@ export const Kiosk: React.FC = () => {
   // Listen for new check-ins in real-time
   useEffect(() => {
     const today = format(new Date(), 'yyyy-MM-dd');
+    // Use a simple query that works without composite indexes —
+    // filter by source and sort client-side
     const unsub = db.collection('staff_attendance')
       .where('date', '==', today)
-      .where('source', '==', 'qr')
-      .orderBy('timestamp', 'desc')
-      .limit(10)
       .onSnapshot((snap) => {
-        const records: any[] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const allRecords: any[] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        const records = allRecords
+          .filter((r: any) => r.source === 'qr')
+          .sort((a: any, b: any) => ((b.timestamp || '') > (a.timestamp || '') ? 1 : -1))
+          .slice(0, 10);
         setCheckIns(records);
+
+        // Skip notification on initial load
+        if (prevCountRef.current === -1) {
+          prevCountRef.current = records.length;
+          return;
+        }
+
         if (records.length > prevCountRef.current) {
           const newest = records[0];
           const msg = newest.role === 'member'
             ? `${newest.name} checked in — have a nice workout!`
             : `Hello ${newest.name} — have a nice day!`;
-          setNotifications(prev => [{ id: Date.now(), name: newest.name, role: newest.role, time: newest.login_time, message: msg }, ...prev].slice(0, 20));
+          setNotifications(prev => [{ id: Date.now(), name: newest.name, role: newest.role, photo: newest.photo, time: newest.login_time, message: msg }, ...prev].slice(0, 20));
           setTimeout(() => setNotifications(prev => prev.slice(0, -1)), 5000);
         }
         prevCountRef.current = records.length;
+      }, (err) => {
+        console.error('Kiosk attendance listener error:', err);
       });
     return () => unsub();
   }, []);
@@ -100,8 +112,14 @@ export const Kiosk: React.FC = () => {
               className="bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl"
             >
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-red-500/20 rounded-xl flex items-center justify-center">
-                  <User className="w-5 h-5 text-red-400" />
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
+                  {n.photo ? (
+                    <img src={n.photo} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-red-500/20 flex items-center justify-center">
+                      <User className="w-5 h-5 text-red-400" />
+                    </div>
+                  )}
                 </div>
                 <div className="min-w-0">
                   <p className="text-sm font-black text-white truncate">{n.message}</p>
