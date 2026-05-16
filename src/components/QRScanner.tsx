@@ -129,13 +129,20 @@ export const QRScanner: React.FC<QRScannerProps> = ({ open, onClose, role }) => 
         if (data.token !== generateToken(data.timestamp)) { setStatus('error'); setMessage('Invalid QR code'); return; }
         if (!user) { setStatus('error'); setMessage('Not authenticated'); return; }
 
+        const personName = userProfile?.name || user?.displayName || 'Unknown';
         await db.collection('staff_attendance').add({
-          user_id: user.uid, name: userProfile?.name || 'Unknown', role,
+          user_id: user.uid, name: personName, role,
           date: format(new Date(), 'yyyy-MM-dd'), login_time: new Date().toLocaleTimeString(),
           timestamp: new Date().toISOString(), source: 'qr'
         });
         setStatus('success');
-        setMessage('Check-in successful!');
+        if (role === 'member') {
+          setMessage(`Welcome ${personName}, have a great workout! 💪`);
+        } else {
+          const hour = new Date().getHours();
+          const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+          setMessage(`${greeting}, ${personName}! Have a nice day!`);
+        }
         setTimeout(() => { if (!cancelled) onClose(); }, 2000);
       } catch {
         setStatus('error'); setMessage('Invalid QR code format');

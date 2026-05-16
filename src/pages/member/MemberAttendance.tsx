@@ -11,12 +11,14 @@ import {
   History as HistoryIcon
 } from '@solar-icons/react';
 import { motion, AnimatePresence } from 'motion/react';
+import { autoCheckoutStaleEntries } from '../../utils/attendance';
 
 export const MemberAttendance: React.FC = () => {
   const { user, userProfile } = useAuth();
   const [todayRecord, setTodayRecord] = useState<any>(null);
   const [history, setHistory] = useState<any[]>([]);
   const [actionLoading, setActionLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState('');
   const [animateIn, setAnimateIn] = useState(false);
 
   useEffect(() => { setTimeout(() => setAnimateIn(true), 100); }, []);
@@ -24,6 +26,8 @@ export const MemberAttendance: React.FC = () => {
   useEffect(() => {
     if (!user) return;
     const today = format(new Date(), 'yyyy-MM-dd');
+
+    autoCheckoutStaleEntries(user.uid);
 
     const unsubToday = db.collection('staff_attendance')
       .where('user_id', '==', user.uid)
@@ -62,14 +66,16 @@ export const MemberAttendance: React.FC = () => {
   };
 
   const handleCheckOut = async () => {
-    if (!user || !todayRecord?.id) return;
+    if (!user || !todayRecord?.id) { setCheckoutError('No active check-in found'); return; }
     setActionLoading(true);
+    setCheckoutError('');
     try {
       await db.collection('staff_attendance').doc(todayRecord.id).update({
         logout_time: new Date().toLocaleTimeString()
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
+      setCheckoutError(err?.message || 'Checkout failed. Try again.');
     }
     setActionLoading(false);
   };
@@ -181,17 +187,20 @@ export const MemberAttendance: React.FC = () => {
                 {actionLoading ? 'Checking in...' : 'Check In'}
               </motion.button>
             ) : !todayRecord.logout_time ? (
-              <motion.button
-                key="checkout"
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.9 }}
-                onClick={handleCheckOut} disabled={actionLoading}
-                className="w-full py-5 bg-red-600 text-white rounded-[1.5rem] font-black text-base hover:bg-red-700 transition-all shadow-xl shadow-red-500/20 flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-50"
-              >
-                <Logout className="w-6 h-6" />
-                {actionLoading ? 'Checking out...' : 'Check Out'}
-              </motion.button>
+              <div className="w-full">
+                <motion.button
+                  key="checkout"
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.9 }}
+                  onClick={handleCheckOut} disabled={actionLoading}
+                  className="w-full py-5 bg-red-600 text-white rounded-[1.5rem] font-black text-base hover:bg-red-700 transition-all shadow-xl shadow-red-500/20 flex items-center justify-center gap-3 active:scale-[0.98] disabled:opacity-50"
+                >
+                  <Logout className="w-6 h-6" />
+                  {actionLoading ? 'Checking out...' : 'Check Out'}
+                </motion.button>
+                {checkoutError && <p className="text-xs font-bold text-red-500 text-center mt-2">{checkoutError}</p>}
+              </div>
             ) : (
               <motion.div
                 key="done"

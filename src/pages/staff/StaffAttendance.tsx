@@ -13,6 +13,7 @@ import {
   UsersGroupTwoRounded
 } from '@solar-icons/react';
 import * as XLSX from 'xlsx';
+import { autoCheckoutStaleEntries } from '../../utils/attendance';
 
 export const StaffAttendance: React.FC = () => {
   const { user, userProfile } = useAuth();
@@ -21,10 +22,13 @@ export const StaffAttendance: React.FC = () => {
   const [roleFilter, setRoleFilter] = useState<'staff' | 'member'>('staff');
   const [todayRecord, setTodayRecord] = useState<any>(null);
   const [actionLoading, setActionLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState('');
 
   useEffect(() => {
     if (!user) return;
     const today = format(new Date(), 'yyyy-MM-dd');
+
+    autoCheckoutStaleEntries(user.uid);
 
     const unsubToday = db.collection('staff_attendance')
       .where('user_id', '==', user.uid)
@@ -59,13 +63,17 @@ export const StaffAttendance: React.FC = () => {
   };
 
   const handleCheckOut = async () => {
-    if (!user || !todayRecord?.id) return;
+    if (!user || !todayRecord?.id) { setCheckoutError('No active check-in found'); return; }
     setActionLoading(true);
+    setCheckoutError('');
     try {
       await db.collection('staff_attendance').doc(todayRecord.id).update({
         logout_time: new Date().toLocaleTimeString()
       });
-    } catch (err) { console.error(err); }
+    } catch (err: any) {
+      console.error(err);
+      setCheckoutError(err?.message || 'Checkout failed. Try again.');
+    }
     setActionLoading(false);
   };
 
@@ -100,11 +108,14 @@ export const StaffAttendance: React.FC = () => {
               {actionLoading ? 'Checking in...' : 'Check In'}
             </button>
           ) : !todayRecord.logout_time ? (
-            <button onClick={handleCheckOut} disabled={actionLoading}
-              className="flex items-center gap-2 bg-red-600 text-white px-5 md:px-7 py-3 md:py-4 rounded-[1.5rem] font-black text-sm hover:bg-red-700 transition-all shadow-xl shadow-red-500/20 active:scale-95 disabled:opacity-50">
-              <Logout className="w-5 h-5" />
-              {actionLoading ? 'Checking out...' : 'Check Out'}
-            </button>
+            <div className="flex flex-col items-end gap-1">
+              <button onClick={handleCheckOut} disabled={actionLoading}
+                className="flex items-center gap-2 bg-red-600 text-white px-5 md:px-7 py-3 md:py-4 rounded-[1.5rem] font-black text-sm hover:bg-red-700 transition-all shadow-xl shadow-red-500/20 active:scale-95 disabled:opacity-50">
+                <Logout className="w-5 h-5" />
+                {actionLoading ? 'Checking out...' : 'Check Out'}
+              </button>
+              {checkoutError && <p className="text-xs font-bold text-red-500">{checkoutError}</p>}
+            </div>
           ) : (
             <div className="flex items-center gap-2 px-5 md:px-7 py-3 md:py-4 bg-pastel-emerald text-red-600 rounded-[1.5rem] border border-red-100 font-black text-sm">
               <CheckCircle className="w-5 h-5" />

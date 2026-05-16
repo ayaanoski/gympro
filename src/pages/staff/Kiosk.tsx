@@ -43,9 +43,11 @@ export const Kiosk: React.FC = () => {
         const records: any[] = snap.docs.map(d => ({ id: d.id, ...d.data() }));
         setCheckIns(records);
         if (records.length > prevCountRef.current) {
-          // New check-in detected
           const newest = records[0];
-          setNotifications(prev => [{ id: Date.now(), name: newest.name, time: newest.login_time }, ...prev].slice(0, 20));
+          const msg = newest.role === 'member'
+            ? `${newest.name} checked in — have a nice workout!`
+            : `Hello ${newest.name} — have a nice day!`;
+          setNotifications(prev => [{ id: Date.now(), name: newest.name, role: newest.role, time: newest.login_time, message: msg }, ...prev].slice(0, 20));
           setTimeout(() => setNotifications(prev => prev.slice(0, -1)), 5000);
         }
         prevCountRef.current = records.length;
@@ -102,7 +104,7 @@ export const Kiosk: React.FC = () => {
                   <User className="w-5 h-5 text-red-400" />
                 </div>
                 <div className="min-w-0">
-                  <p className="text-sm font-black text-white truncate">{n.name}</p>
+                  <p className="text-sm font-black text-white truncate">{n.message}</p>
                   <p className="text-xs font-bold text-red-400 flex items-center gap-1">
                     <ClockCircle className="w-3 h-3" /> {n.time}
                   </p>

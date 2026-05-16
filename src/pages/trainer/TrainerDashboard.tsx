@@ -19,6 +19,7 @@ import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { ImageViewer } from '../../components/ImageViewer';
 import { QRScanner } from '../../components/QRScanner';
+import { autoCheckoutStaleEntries } from '../../utils/attendance';
 
 export const TrainerDashboard: React.FC = () => {
   const { user, userProfile } = useAuth();
@@ -33,6 +34,7 @@ export const TrainerDashboard: React.FC = () => {
   const [scannerOpen, setScannerOpen] = useState(false);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const PER_PAGE = 10;
@@ -46,6 +48,8 @@ export const TrainerDashboard: React.FC = () => {
 
   useEffect(() => {
     if (!user) return;
+
+    autoCheckoutStaleEntries(user.uid);
 
     const unsubMembers = db.collection('members')
       .where('trainer_id', '==', user.uid)
@@ -126,13 +130,17 @@ export const TrainerDashboard: React.FC = () => {
   };
 
   const handleCheckOut = async () => {
-    if (!user || !todayRecord?.id) return;
+    if (!user || !todayRecord?.id) { setCheckoutError('No active check-in found'); return; }
     setActionLoading(true);
+    setCheckoutError('');
     try {
       await db.collection('staff_attendance').doc(todayRecord.id).update({
         logout_time: new Date().toLocaleTimeString()
       });
-    } catch (err) { console.error(err); }
+    } catch (err: any) {
+      console.error(err);
+      setCheckoutError(err?.message || 'Checkout failed. Try again.');
+    }
     setActionLoading(false);
   };
 
@@ -161,11 +169,14 @@ export const TrainerDashboard: React.FC = () => {
               {actionLoading ? '...' : 'Check In'}
             </button>
           ) : !todayRecord.logout_time ? (
-            <button onClick={handleCheckOut} disabled={actionLoading}
-              className="flex items-center gap-2 bg-red-600 text-white px-5 md:px-7 py-3 md:py-4 rounded-[1.5rem] font-black text-sm hover:bg-red-700 transition-all shadow-xl shadow-red-500/20 active:scale-95 disabled:opacity-50">
-              <Logout className="w-5 h-5" />
-              {actionLoading ? '...' : 'Check Out'}
-            </button>
+            <div className="flex flex-col items-end gap-1">
+              <button onClick={handleCheckOut} disabled={actionLoading}
+                className="flex items-center gap-2 bg-red-600 text-white px-5 md:px-7 py-3 md:py-4 rounded-[1.5rem] font-black text-sm hover:bg-red-700 transition-all shadow-xl shadow-red-500/20 active:scale-95 disabled:opacity-50">
+                <Logout className="w-5 h-5" />
+                {actionLoading ? '...' : 'Check Out'}
+              </button>
+              {checkoutError && <p className="text-xs font-bold text-red-500">{checkoutError}</p>}
+            </div>
           ) : (
             <div className="flex items-center gap-2 px-5 md:px-7 py-3 md:py-4 bg-pastel-emerald text-red-600 rounded-[1.5rem] border border-red-100 font-black text-sm">
               <CheckCircle className="w-5 h-5" />

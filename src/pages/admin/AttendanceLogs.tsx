@@ -17,7 +17,8 @@ export const AttendanceLogs: React.FC = () => {
   const [roleFilter, setRoleFilter] = useState<'staff' | 'member'>('staff');
 
   useEffect(() => {
-    adminService.getAttendanceLogsOnce().then(setLogs);
+    const unsubscribe = adminService.getAttendanceLogs(setLogs);
+    return () => unsubscribe();
   }, []);
 
   const exportToExcel = () => {
