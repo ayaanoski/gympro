@@ -38,7 +38,9 @@ export const MembersList: React.FC = () => {
     discount_percent: 0,
     trainer_id: '',
     trainer_fee: 0,
-    initial_payment: 0,
+    total_fees: 0,
+    amount_paid: 0,
+    next_due_date: '',
     payment_method: 'Cash',
     dob: '',
     reg_password: ''
@@ -106,6 +108,7 @@ export const MembersList: React.FC = () => {
       // 2. Create member document
       const memberRef = await staffService.addMember({
         ...formData,
+        due_amount: Math.max(0, formData.total_fees - formData.amount_paid),
         auth_uid: authUid,
         trainer_name: selectedTrainer?.name || 'Not Assigned',
         expiry_date: expiryStr,
@@ -126,7 +129,7 @@ export const MembersList: React.FC = () => {
 
       // 4. All DB ops succeeded — close modal, reset form
       setIsModalOpen(false);
-      setFormData({ name: '', phone: '', email: '', membership_plan: '', category: 'normal', discount_percent: 0, trainer_id: '', trainer_fee: 0, initial_payment: 0, payment_method: 'Cash', dob: '', reg_password: '' });
+      setFormData({ name: '', phone: '', email: '', membership_plan: '', category: 'normal', discount_percent: 0, trainer_id: '', trainer_fee: 0, total_fees: 0, amount_paid: 0, next_due_date: '', payment_method: 'Cash', dob: '', reg_password: '' });
 
       // 4. Open WhatsApp in a new tab (anchor click bypasses popup blockers)
       const waAnchor = document.createElement('a');
@@ -398,7 +401,7 @@ export const MembersList: React.FC = () => {
                         const discount = formData.discount_percent || 0;
                         const fee = formData.trainer_fee || 0;
                         const finalAmount = price - Math.round(price * discount / 100) + fee;
-                        setFormData({ ...formData, membership_plan: e.target.value, initial_payment: finalAmount });
+                        setFormData({ ...formData, membership_plan: e.target.value, total_fees: finalAmount, amount_paid: finalAmount });
                       }}
                       className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-[right_1.25rem_center] bg-no-repeat"
                     >
@@ -429,7 +432,7 @@ export const MembersList: React.FC = () => {
                         const price = plan ? plan.price : 0;
                         const fee = formData.trainer_fee || 0;
                         const finalAmount = price - Math.round(price * d / 100) + fee;
-                        setFormData({ ...formData, discount_percent: d, initial_payment: finalAmount });
+                        setFormData({ ...formData, discount_percent: d, total_fees: finalAmount, amount_paid: finalAmount });
                       }}
                       className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700"
                       placeholder="0"
@@ -457,15 +460,15 @@ export const MembersList: React.FC = () => {
                         const price = plan ? plan.price : 0;
                         const discount = formData.discount_percent || 0;
                         const finalAmount = price - Math.round(price * discount / 100) + fee;
-                        setFormData({ ...formData, trainer_fee: fee, initial_payment: finalAmount });
+                        setFormData({ ...formData, trainer_fee: fee, total_fees: finalAmount, amount_paid: finalAmount });
                       }}
                       className="w-full px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700"
                       placeholder="Enter trainer fee amount" />
                   </div>
                   )}
                   <div className="space-y-2">
-                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Total Amount (₹)</label>
-                    <input type="number" required readOnly value={formData.initial_payment}
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Total Plan Cost (₹)</label>
+                    <input type="number" required readOnly value={formData.total_fees}
                       className="w-full px-6 py-4 bg-gray-100 border border-transparent rounded-2xl cursor-not-allowed font-bold text-gray-500 outline-none" />
                     {formData.membership_plan && (
                       <p className="text-[10px] text-gray-400 font-bold px-1">
@@ -473,6 +476,26 @@ export const MembersList: React.FC = () => {
                       </p>
                     )}
                   </div>
+                  <div className="space-y-2">
+                    <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Amount Paid Now (₹)</label>
+                    <input type="number" required min="0" max={formData.total_fees} value={formData.amount_paid}
+                      onChange={e => setFormData({ ...formData, amount_paid: parseInt(e.target.value) || 0 })}
+                      className="w-full px-6 py-4 bg-pastel-emerald/20 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-brand-primary" />
+                  </div>
+                  {formData.total_fees - formData.amount_paid > 0 && (
+                    <div className="space-y-2 col-span-1 md:col-span-2 p-4 bg-pastel-pink/30 rounded-2xl border border-pink-100 flex flex-col md:flex-row gap-4 items-center">
+                      <div className="flex-1 w-full">
+                        <label className="block text-[10px] font-black text-pink-600 uppercase tracking-widest ml-1 mb-1">Remaining Due (₹)</label>
+                        <p className="text-2xl font-black text-pink-500">₹{formData.total_fees - formData.amount_paid}</p>
+                      </div>
+                      <div className="flex-1 w-full">
+                        <label className="block text-[10px] font-black text-pink-600 uppercase tracking-widest ml-1 mb-1">Next Due Date</label>
+                        <input type="date" required value={formData.next_due_date}
+                          onChange={e => setFormData({ ...formData, next_due_date: e.target.value })}
+                          className="w-full px-4 py-3 bg-white border border-pink-200 rounded-xl focus:border-pink-500 focus:ring-2 focus:ring-pink-200 outline-none transition-all font-bold text-pink-700" />
+                      </div>
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">Payment Method</label>
                     <select

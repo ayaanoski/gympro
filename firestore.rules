@@ -161,7 +161,7 @@ service cloud.firestore {
     match /trainer_earnings/{earningId} {
       allow read: if isAdmin() || (isTrainer() && resource.data.trainer_id == request.auth.uid);
       allow create: if isAdminOrStaff() || (isTrainer() && request.resource.data.trainer_id == request.auth.uid);
-      allow update: if false; // Earnings are immutable after creation
+      allow update: if isAdmin(); // Admin can mark as paid
       allow delete: if isAdmin();
     }
 
@@ -173,6 +173,17 @@ service cloud.firestore {
       allow read: if isAdminOrStaff();
       allow create: if isAdminOrStaff();
       allow update: if false; // Documents are immutable — upload new version instead
+      allow delete: if isAdmin();
+    }
+
+    // ============================================================
+    // expenses/{docId}
+    // ============================================================
+
+    match /expenses/{expenseId} {
+      allow read: if isAdmin();
+      allow create: if isAdminOrStaff();
+      allow update: if isAdmin();
       allow delete: if isAdmin();
     }
   }

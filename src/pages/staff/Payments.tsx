@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { staffService } from '../../services/staffService';
 import {
   Dollar,
@@ -16,12 +17,19 @@ import { db } from '../../firebase';
 
 export const Payments: React.FC = () => {
   const [payments, setPayments] = useState<any[]>([]);
+  const [defaulters, setDefaulters] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<'payments' | 'dues'>('payments');
+  const navigate = useNavigate();
 
   useEffect(() => {
-    staffService.getPaymentsOnce().then((data) => {
-      setPayments(data);
+    Promise.all([
+      staffService.getPaymentsOnce(),
+      staffService.getMembersWithDuesOnce()
+    ]).then(([paymentsData, duesData]) => {
+      setPayments(paymentsData);
+      setDefaulters(duesData);
       setLoading(false);
     });
   }, []);
@@ -36,6 +44,11 @@ export const Payments: React.FC = () => {
   const filteredPayments = payments.filter(p =>
     p.member_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.member_id?.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredDefaulters = defaulters.filter(d =>
+    d.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    d.member_id?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleDelete = async (paymentId: string, memberName: string) => {
@@ -104,37 +117,54 @@ export const Payments: React.FC = () => {
       </div>
 
       <div className="bg-white rounded-[2.5rem] border border-gray-100 shadow-premium overflow-hidden">
-        <div className="p-4 md:p-8 border-b border-gray-50/50 flex flex-col md:flex-row gap-4 md:gap-6">
-          <div className="relative flex-1 group">
-            <Magnifer className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 transition-colors group-focus-within:text-brand-primary" />
-            <input
-              type="text"
-              placeholder="Query by member name or transaction ID..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-14 pr-6 py-4 bg-gray-50 border border-transparent rounded-[1.5rem] focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-medium text-gray-600"
-            />
+        <div className="p-4 md:p-8 border-b border-gray-50/50 flex flex-col gap-4">
+          <div className="flex gap-4 border-b border-gray-100">
+            <button
+              onClick={() => setActiveTab('payments')}
+              className={`px-4 py-3 font-black text-sm uppercase tracking-widest border-b-2 transition-all ${activeTab === 'payments' ? 'border-brand-primary text-brand-primary' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+            >
+              All Payments
+            </button>
+            <button
+              onClick={() => setActiveTab('dues')}
+              className={`px-4 py-3 font-black text-sm uppercase tracking-widest border-b-2 transition-all ${activeTab === 'dues' ? 'border-brand-primary text-brand-primary' : 'border-transparent text-gray-400 hover:text-gray-600'}`}
+            >
+              Pending Dues
+            </button>
           </div>
-          <button className="flex items-center gap-3 px-6 md:px-8 py-4 bg-gray-900 text-white rounded-[1.5rem] font-black text-sm hover:scale-105 transition-all shadow-lg shadow-gray-200 w-full md:w-auto justify-center">
-            <Filter className="w-5 h-5" />
-            Refine Search
-          </button>
+          <div className="flex flex-col md:flex-row gap-4 md:gap-6 mt-4">
+            <div className="relative flex-1 group">
+              <Magnifer className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 transition-colors group-focus-within:text-brand-primary" />
+              <input
+                type="text"
+                placeholder={`Query by member name or ID...`}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-14 pr-6 py-4 bg-gray-50 border border-transparent rounded-[1.5rem] focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-medium text-gray-600"
+              />
+            </div>
+            <button className="flex items-center gap-3 px-6 md:px-8 py-4 bg-gray-900 text-white rounded-[1.5rem] font-black text-sm hover:scale-105 transition-all shadow-lg shadow-gray-200 w-full md:w-auto justify-center">
+              <Filter className="w-5 h-5" />
+              Refine Search
+            </button>
+          </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="w-full text-left">
-            <thead>
-              <tr className="text-gray-400 text-[10px] uppercase font-black tracking-[0.2em] border-b border-gray-50/50">
-                <th className="px-4 md:px-8 py-4 md:py-6 font-black">Timeline</th>
-                <th className="px-4 md:px-8 py-4 md:py-6 font-black">Payer Identity</th>
-                <th className="px-4 md:px-8 py-4 md:py-6 font-black">Capital Units</th>
-                <th className="px-4 md:px-8 py-4 md:py-6 font-black">Protocol</th>
-                <th className="px-4 md:px-8 py-4 md:py-6 font-black">Strategic Package</th>
-                <th className="px-4 md:px-8 py-4 md:py-6 font-black text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-50/50">
-              {filteredPayments.length > 0 ? filteredPayments.map((payment) => (
+          {activeTab === 'payments' ? (
+            <table className="w-full text-left">
+              <thead>
+                <tr className="text-gray-400 text-[10px] uppercase font-black tracking-[0.2em] border-b border-gray-50/50">
+                  <th className="px-4 md:px-8 py-4 md:py-6 font-black">Timeline</th>
+                  <th className="px-4 md:px-8 py-4 md:py-6 font-black">Payer Identity</th>
+                  <th className="px-4 md:px-8 py-4 md:py-6 font-black">Capital Units</th>
+                  <th className="px-4 md:px-8 py-4 md:py-6 font-black">Protocol</th>
+                  <th className="px-4 md:px-8 py-4 md:py-6 font-black">Strategic Package</th>
+                  <th className="px-4 md:px-8 py-4 md:py-6 font-black text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50/50">
+                {filteredPayments.length > 0 ? filteredPayments.map((payment) => (
                 <tr key={payment.id} className="group hover:bg-gray-50/30 transition-colors">
                   <td className="px-4 md:px-8 py-4 md:py-6">
                     <div className="flex items-center gap-2 md:gap-3 text-sm font-black text-gray-400 whitespace-nowrap">
@@ -187,6 +217,60 @@ export const Payments: React.FC = () => {
               )}
             </tbody>
           </table>
+          ) : (
+            <table className="w-full text-left">
+              <thead>
+                <tr className="text-gray-400 text-[10px] uppercase font-black tracking-[0.2em] border-b border-gray-50/50">
+                  <th className="px-4 md:px-8 py-4 md:py-6 font-black">Member Identity</th>
+                  <th className="px-4 md:px-8 py-4 md:py-6 font-black">Contact</th>
+                  <th className="px-4 md:px-8 py-4 md:py-6 font-black">Pending Amount</th>
+                  <th className="px-4 md:px-8 py-4 md:py-6 font-black">Due Date</th>
+                  <th className="px-4 md:px-8 py-4 md:py-6 font-black text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-50/50">
+                {filteredDefaulters.length > 0 ? filteredDefaulters.map((member) => (
+                  <tr key={member.id} className="group hover:bg-gray-50/30 transition-colors cursor-pointer" onClick={() => navigate(`/member/${member.id}`)}>
+                    <td className="px-4 md:px-8 py-4 md:py-6">
+                      <p className="text-sm md:text-base font-black text-gray-900 truncate max-w-[120px] md:max-w-none">{member.name}</p>
+                      <p className="text-[10px] md:text-xs text-gray-400 font-bold uppercase tracking-widest truncate max-w-[120px] md:max-w-none">{member.member_id || member.id}</p>
+                    </td>
+                    <td className="px-4 md:px-8 py-4 md:py-6">
+                      <p className="text-sm md:text-base font-black text-gray-600 truncate max-w-[120px] md:max-w-none">{member.phone}</p>
+                    </td>
+                    <td className="px-4 md:px-8 py-4 md:py-6">
+                      <p className="text-sm md:text-base font-black text-red-500">₹{member.due_amount}</p>
+                    </td>
+                    <td className="px-4 md:px-8 py-4 md:py-6">
+                      <div className="flex items-center gap-2 md:gap-3 text-sm font-black text-gray-400 whitespace-nowrap">
+                        <Calendar className="w-4 h-4 text-brand-primary/40 shrink-0" />
+                        {member.next_due_date || 'N/A'}
+                      </div>
+                    </td>
+                    <td className="px-4 md:px-8 py-4 md:py-6 text-right">
+                      <button
+                        onClick={(e) => { e.stopPropagation(); navigate(`/member/${member.id}`); }}
+                        className="px-4 py-2 bg-red-50 text-red-600 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-red-100 transition-all"
+                      >
+                        View Profile
+                      </button>
+                    </td>
+                  </tr>
+                )) : (
+                  <tr>
+                    <td colSpan={5} className="px-4 md:px-8 py-12 md:py-20 text-center">
+                      <div className="flex flex-col items-center">
+                        <div className="w-16 md:w-20 h-16 md:h-20 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+                          <Banknote className="w-6 md:w-8 h-6 md:h-8 text-gray-200" />
+                        </div>
+                        <p className="text-gray-400 font-black text-base md:text-lg">No members with pending dues</p>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>

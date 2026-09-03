@@ -81,6 +81,13 @@ export const MemberProfile: React.FC = () => {
     name: '', phone: '', email: '', dob: '', category: 'normal', discount_percent: 0, membership_plan: '', trainer_fee: 0
   });
 
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+  const [paymentData, setPaymentData] = useState({
+    amount: 0,
+    payment_method: 'Cash',
+    notes: ''
+  });
+
   useEffect(() => {
     if (!id) return;
 
@@ -190,6 +197,26 @@ export const MemberProfile: React.FC = () => {
       setIsRenewModalOpen(false);
     } catch (err: any) {
       alert(`Renewal Failed: ${err.message || 'Database error'}`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
+  const handleRecordPayment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!id || !member) return;
+    setActionLoading(true);
+    try {
+      await staffService.recordDuePayment(id, {
+        amount: paymentData.amount,
+        method: paymentData.payment_method,
+        notes: paymentData.notes
+      });
+      setIsPaymentModalOpen(false);
+      setPaymentData({ amount: 0, payment_method: 'Cash', notes: '' });
+      openWhatsApp(member.phone, whatsAppTemplates.paymentReceipt(member.name, paymentData.amount));
+    } catch (err: any) {
+      alert(`Payment Failed: ${err.message || 'Database error'}`);
     } finally {
       setActionLoading(false);
     }
@@ -481,6 +508,29 @@ export const MemberProfile: React.FC = () => {
                 </span>
               )}
             </div>
+            
+            {member.due_amount > 0 && (
+              <div className="mt-6 pt-6 border-t border-gray-50 text-center">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-2">Pending Dues</p>
+                <div className="p-4 bg-red-50 rounded-[2rem] border border-red-100">
+                  <p className="text-xl md:text-2xl font-black text-red-600 mb-1">₹{member.due_amount}</p>
+                  {member.next_due_date && (
+                    <p className="text-[10px] font-bold text-red-400 uppercase tracking-widest mb-3">Due by: {member.next_due_date}</p>
+                  )}
+                  {(isAdmin || isStaff) && (
+                    <button 
+                      onClick={() => {
+                        setPaymentData({ amount: member.due_amount, payment_method: 'Cash', notes: '' });
+                        setIsPaymentModalOpen(true);
+                      }}
+                      className="w-full py-2 bg-red-600 text-white rounded-full font-black text-[10px] uppercase tracking-widest hover:bg-red-700 transition-all shadow-md shadow-red-500/20"
+                    >
+                      Record Payment
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -797,6 +847,63 @@ export const MemberProfile: React.FC = () => {
                   <button type="button" onClick={() => setIsRenewModalOpen(false)} className="flex-1 py-4 bg-gray-100 text-gray-600 rounded-[1.5rem] font-black text-xs md:text-sm hover:bg-gray-200 transition-all">Cancel</button>
                   <button type="submit" disabled={actionLoading} className="flex-[2] py-4 bg-brand-primary text-white rounded-[1.5rem] font-black text-xs md:text-sm hover:bg-brand-secondary transition-all shadow-xl shadow-brand-primary/20 disabled:opacity-50">
                     {actionLoading ? 'Renewing...' : 'Renew'}
+                  </button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Record Payment Modal */}
+      <AnimatePresence>
+        {isPaymentModalOpen && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-3 md:p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setIsPaymentModalOpen(false)}
+              className="absolute inset-0 bg-black/30 backdrop-blur-md"
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 40 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.95, y: 40 }}
+              transition={{ type: "spring", damping: 25, stiffness: 300 }}
+              className="relative w-full max-w-md bg-white rounded-[2rem] md:rounded-[3rem] shadow-2xl p-5 md:p-10 border border-white/50"
+            >
+              <div className="mb-6 md:mb-10 text-center">
+                <div className="w-16 md:w-20 h-16 md:h-20 bg-pastel-emerald rounded-[2rem] flex items-center justify-center mx-auto mb-4 md:mb-6 shadow-sm">
+                  <History className="w-8 md:w-10 h-8 md:h-10 text-brand-primary" />
+                </div>
+                <h2 className="text-xl md:text-3xl font-black text-gray-900 tracking-tight">Record Payment</h2>
+                <p className="text-gray-400 font-bold mt-1 uppercase text-[10px] tracking-widest">Clear pending dues</p>
+              </div>
+              <form onSubmit={handleRecordPayment} className="space-y-4 md:space-y-6">
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Payment Amount (₹)</label>
+                  <input type="number" required max={member.due_amount} min="1" value={paymentData.amount} onChange={e => setPaymentData({ ...paymentData, amount: parseInt(e.target.value) || 0 })}
+                    className="w-full px-4 md:px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Payment Method</label>
+                  <select value={paymentData.payment_method} onChange={e => setPaymentData({ ...paymentData, payment_method: e.target.value })}
+                    className="w-full px-4 md:px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700 appearance-none bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20fill%3D%22none%22%20viewBox%3D%220%200%2020%2020%22%3E%3Cpath%20stroke%3D%22%236b7280%22%20stroke-linecap%3D%22round%22%20stroke-linejoin%3D%22round%22%20stroke-width%3D%221.5%22%20d%3D%22m6%208%204%204%204-4%22%2F%3E%3C%2Fsvg%3E')] bg-[length:20px_20px] bg-[right_1.25rem_center] bg-no-repeat"
+                  >
+                    <option value="Cash">Cash</option><option value="UPI">UPI</option><option value="Card">Card</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-2 ml-1">Notes (Optional)</label>
+                  <textarea value={paymentData.notes} onChange={e => setPaymentData({ ...paymentData, notes: e.target.value })}
+                    className="w-full px-4 md:px-6 py-4 bg-gray-50 border border-transparent rounded-2xl focus:bg-white focus:border-brand-primary/30 focus:ring-4 focus:ring-brand-primary/5 outline-none transition-all font-bold text-gray-700 h-24 resize-none"
+                    placeholder="e.g. Cleared pending dues for January" />
+                </div>
+                <div className="flex gap-3 md:gap-4 pt-4">
+                  <button type="button" onClick={() => setIsPaymentModalOpen(false)} className="flex-1 py-4 bg-gray-100 text-gray-600 rounded-[1.5rem] font-black text-xs md:text-sm hover:bg-gray-200 transition-all">Cancel</button>
+                  <button type="submit" disabled={actionLoading || paymentData.amount <= 0} className="flex-[2] py-4 bg-brand-primary text-white rounded-[1.5rem] font-black text-xs md:text-sm hover:bg-brand-secondary transition-all shadow-xl shadow-brand-primary/20 disabled:opacity-50">
+                    {actionLoading ? 'Saving...' : 'Record Payment'}
                   </button>
                 </div>
               </form>

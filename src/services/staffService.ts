@@ -46,21 +46,28 @@ export const staffService = {
       start_date: memberData.start_date,
       auth_uid: memberData.auth_uid || '',
       status: 'active',
+      total_fees: memberData.total_fees || 0,
+      total_paid: memberData.amount_paid || 0,
+      due_amount: memberData.due_amount || 0,
+      next_due_date: memberData.next_due_date || null,
       created_at: new Date().toISOString()
     });
     
     // Record initial payment
-    await db.collection('payments').add({
-      member_id: docRef.id,
-      member_name: memberData.name,
-      amount: memberData.initial_payment,
-      method: memberData.payment_method,
-      plan_name: memberData.membership_plan,
-      category: memberData.category || 'normal',
-      discount_percent: memberData.discount_percent || 0,
-      date: new Date().toISOString().split('T')[0],
-      timestamp: new Date().toISOString()
-    });
+    if (memberData.amount_paid > 0) {
+      await db.collection('payments').add({
+        member_id: docRef.id,
+        member_name: memberData.name,
+        amount: memberData.amount_paid,
+        method: memberData.payment_method,
+        plan_name: memberData.membership_plan,
+        category: memberData.category || 'normal',
+        discount_percent: memberData.discount_percent || 0,
+        date: new Date().toISOString().split('T')[0],
+        timestamp: new Date().toISOString(),
+        payment_type: memberData.due_amount > 0 ? 'Partial' : 'Full'
+      });
+    }
 
     return docRef;
   },
@@ -71,19 +78,55 @@ export const staffService = {
       status: 'active',
       membership_plan: renewalData.plan_name,
       category: renewalData.category || 'normal',
-      discount_percent: renewalData.discount_percent || 0
+      discount_percent: renewalData.discount_percent || 0,
+      total_fees: renewalData.total_fees || 0,
+      total_paid: renewalData.amount_paid || 0,
+      due_amount: renewalData.due_amount || 0,
+      next_due_date: renewalData.next_due_date || null,
+    });
+
+    if (renewalData.amount_paid > 0) {
+      await db.collection('payments').add({
+        member_id: memberId,
+        member_name: renewalData.member_name,
+        amount: renewalData.amount_paid,
+        method: renewalData.payment_method,
+        plan_name: renewalData.plan_name,
+        category: renewalData.category || 'normal',
+        discount_percent: renewalData.discount_percent || 0,
+        date: new Date().toISOString().split('T')[0],
+        timestamp: new Date().toISOString(),
+        payment_type: renewalData.due_amount > 0 ? 'Partial' : 'Full'
+      });
+    }
+  },
+
+  recordDuePayment: async (memberId: string, paymentData: any) => {
+    // get current member
+    const memberDoc = await db.collection('members').doc(memberId).get();
+    const member = memberDoc.data();
+    if (!member) throw new Error('Member not found');
+
+    const newTotalPaid = (member.total_paid || 0) + paymentData.amount;
+    const newDueAmount = (member.total_fees || 0) - newTotalPaid;
+
+    await db.collection('members').doc(memberId).update({
+      total_paid: newTotalPaid,
+      due_amount: Math.max(0, newDueAmount),
+      next_due_date: paymentData.next_due_date || null
     });
 
     await db.collection('payments').add({
       member_id: memberId,
-      member_name: renewalData.member_name,
-      amount: renewalData.amount,
-      method: renewalData.payment_method,
-      plan_name: renewalData.plan_name,
-      category: renewalData.category || 'normal',
-      discount_percent: renewalData.discount_percent || 0,
+      member_name: member.name,
+      amount: paymentData.amount,
+      method: paymentData.method,
+      plan_name: 'Due Clearance',
+      category: member.category || 'normal',
+      discount_percent: 0,
       date: new Date().toISOString().split('T')[0],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      payment_type: 'Due'
     });
   },
 
@@ -99,5 +142,12 @@ export const staffService = {
       .where('expiry_date', '>=', todayStr)
       .where('expiry_date', '<=', futureStr)
       .get();
+  },
+
+  getMembersWithDuesOnce: async () => {
+    const snap = await db.collection('members')
+      .where('due_amount', '>', 0)
+      .get();
+    return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
   }
 };

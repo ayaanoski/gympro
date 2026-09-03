@@ -34,5 +34,8 @@ export const whatsAppTemplates = {
     `⚠️ *Membership Expiring Soon*\n\nHi ${name},\n\nYour GYMPRO membership is set to expire on *${date}*.\n\nDon't let your progress stop! Renew your plan soon to keep access to all facilities and training programs. 🏋️‍♀️\n\nLooking forward to seeing you at the gym!\n\n*Team GYMPRO*`,
 
   checkIn: (name: string) =>
-    `👋 *Quick Check-in!*\n\nHi ${name},\n\nJust wanted to see how your workouts are going. We're here to support your fitness journey!\n\nIs there anything we can help you with today? Stay motivated! 🔥\n\n*Team GYMPRO*`
+    `👋 *Quick Check-in!*\n\nHi ${name},\n\nJust wanted to see how your workouts are going. We're here to support your fitness journey!\n\nIs there anything we can help you with today? Stay motivated! 🔥\n\n*Team GYMPRO*`,
+
+  paymentReceipt: (name: string, amount: number) =>
+    `💰 *Payment Received*\n\nHi ${name},\n\nWe have successfully received your payment of ₹${amount} towards your pending dues.\n\nThank you for clearing your balance. Keep up the great work at the gym! 💪\n\nBest regards,\n*Team GYMPRO*`
 };

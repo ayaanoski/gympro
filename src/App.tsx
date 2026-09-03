@@ -13,6 +13,7 @@ import { StaffAttendance } from './pages/staff/StaffAttendance';
 import { Kiosk } from './pages/staff/Kiosk';
 import { AttendanceLogs } from './pages/admin/AttendanceLogs';
 import { Settings } from './pages/admin/Settings';
+import { Expenses } from './pages/admin/Expenses';
 import { MemberDashboard } from './pages/member/MemberDashboard';
 import { MemberSettings } from './pages/member/MemberSettings';
 import { MemberAttendance } from './pages/member/MemberAttendance';
@@ -60,6 +61,12 @@ export default function App() {
           <Route path="/attendance" element={
             <ProtectedRoute requireAdmin>
               <Layout><AttendanceLogs /></Layout>
+            </ProtectedRoute>
+          } />
+
+          <Route path="/expenses" element={
+            <ProtectedRoute requireAdmin>
+              <Layout><Expenses /></Layout>
             </ProtectedRoute>
           } />
 
