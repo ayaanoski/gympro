@@ -57,7 +57,7 @@ service cloud.firestore {
 
     match /users/{userId} {
       allow read: if isAuthenticated() && (isOwnUser(userId) || isEmployee());
-      allow create: if isAuthenticated() && isOwnUser(userId);
+      allow create: if isAuthenticated() && (isOwnUser(userId) || isAdminOrStaff());
       allow update: if isAuthenticated() && (
         (isOwnUser(userId) && request.resource.data.keys().hasOnly(['qr_code', 'name', 'phone']))
         || isAdmin()
@@ -160,7 +160,7 @@ service cloud.firestore {
 
     match /trainer_earnings/{earningId} {
       allow read: if isAdmin() || (isTrainer() && resource.data.trainer_id == request.auth.uid);
-      allow create: if isTrainer() && request.resource.data.trainer_id == request.auth.uid;
+      allow create: if isAdminOrStaff() || (isTrainer() && request.resource.data.trainer_id == request.auth.uid);
       allow update: if false; // Earnings are immutable after creation
       allow delete: if isAdmin();
     }
